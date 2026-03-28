@@ -9,73 +9,91 @@
         body { font-family: sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; }
         .app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         header { background: var(--primary); color: white; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: bold; }
-        
-        .input-group { display: flex; padding: 10px; gap: 5px; position: sticky; top: 0; background: white; z-index: 10; }
-        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; } /* 16px verhindert Auto-Zoom auf iOS */
-        button#add-btn { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-
+        .input-group { display: flex; padding: 10px; gap: 5px; position: sticky; top: 0; background: white; z-index: 10; border-bottom: 1px solid #eee; }
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        button#add-btn { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 20px; }
         ul { list-style: none; padding: 0; margin: 0; }
-        li { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: background 0.2s; }
-        li.checked { background: #f9f9f9; text-decoration: line-through; color: #888; }
-        .item-text { flex: 1; font-size: 1.1rem; cursor: pointer; }
-        .delete-btn { color: #ff5252; border: none; background: none; padding: 5px 10px; cursor: pointer; font-size: 1.2rem; }
+        li { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        li.checked .item-text { text-decoration: line-through; color: #888; }
+        .item-text { flex: 1; font-size: 1.1rem; cursor: pointer; padding: 5px; }
+        .delete-btn { color: #ff5252; border: none; background: none; padding: 10px; cursor: pointer; font-size: 1.4rem; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <header>Einkaufsliste</header>
-    
+    <header>Familien-Liste 🛒</header>
     <div class="input-group">
-        <input type="text" id="item-input" placeholder="Milch, Eier..." autofocus>
+        <input type="text" id="item-input" placeholder="Was brauchen wir?" autofocus>
         <button id="add-btn">+</button>
     </div>
-
     <ul id="shopping-list"></ul>
 </div>
 
-<script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAHXdu0nscpjeZ-hD4aZGctADhr8dVnpy0",
+        authDomain: "familienliste-292c8.firebaseapp.com",
+        projectId: "familienliste-292c8",
+        storageBucket: "familienliste-292c8.firebasestorage.app",
+        messagingSenderId: "27172030104",
+        appId: "1:27172030104:web:ec55b4f4b8e4c07373f2ed"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colRef = collection(db, "shoppingList");
+
     const input = document.getElementById('item-input');
     const addBtn = document.getElementById('add-btn');
-    const list = document.getElementById('shopping-list');
+    const listElement = document.getElementById('shopping-list');
 
-    // Laden beim Start
-    let items = JSON.parse(localStorage.getItem('shopping-items')) || [];
-    render();
-
-    function render() {
-        list.innerHTML = '';
-        items.forEach((item, index) => {
+    // Echtzeit-Update von Firebase
+    const q = query(colRef, orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+        listElement.innerHTML = '';
+        snapshot.docs.forEach(docSnap => {
+            const item = docSnap.data();
+            const id = docSnap.id;
+            
             const li = document.createElement('li');
             li.className = item.checked ? 'checked' : '';
             li.innerHTML = `
-                <span class="item-text" onclick="toggleItem(${index})">${item.text}</span>
-                <button class="delete-btn" onclick="deleteItem(${index})">×</button>
+                <span class="item-text">${item.text}</span>
+                <button class="delete-btn">×</button>
             `;
-            list.appendChild(li);
+
+            // Abhaken
+            li.querySelector('.item-text').onclick = () => {
+                updateDoc(doc(db, "shoppingList", id), { checked: !item.checked });
+            };
+
+            // Löschen
+            li.querySelector('.delete-btn').onclick = () => {
+                deleteDoc(doc(db, "shoppingList", id));
+            };
+
+            listElement.appendChild(li);
         });
-        localStorage.setItem('shopping-items', JSON.stringify(items));
-    }
+    });
 
-    function addItem() {
-        if (input.value.trim() === "") return;
-        items.unshift({ text: input.value, checked: false });
+    // Artikel hinzufügen
+    async function addItem() {
+        const text = input.value.trim();
+        if (text === "") return;
         input.value = '';
-        render();
+        await addDoc(colRef, {
+            text: text,
+            checked: false,
+            createdAt: Date.now()
+        });
     }
 
-    window.toggleItem = (index) => {
-        items[index].checked = !items[index].checked;
-        render();
-    };
-
-    window.deleteItem = (index) => {
-        items.splice(index, 1);
-        render();
-    };
-
-    addBtn.addEventListener('click', addItem);
-    input.addEventListener('keypress', (e) => { if(e.key === 'Enter') addItem(); });
+    addBtn.onclick = addItem;
+    input.onkeypress = (e) => { if(e.key === 'Enter') addItem(); };
 </script>
 
 </body>
