@@ -1,35 +1,3 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Familien-Liste</title>
-    <style>
-        :root { --primary: #4CAF50; --bg: #f4f7f6; }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        header { background: var(--primary); color: white; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: bold; }
-        .input-group { display: flex; padding: 10px; gap: 5px; position: sticky; top: 0; background: white; z-index: 10; border-bottom: 1px solid #eee; }
-        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        button#add-btn { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 20px; }
-        ul { list-style: none; padding: 0; margin: 0; }
-        li { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
-        li.checked .item-text { text-decoration: line-through; color: #888; }
-        .item-text { flex: 1; font-size: 1.1rem; cursor: pointer; padding: 5px; }
-        .delete-btn { color: #ff5252; border: none; background: none; padding: 10px; cursor: pointer; font-size: 1.4rem; font-weight: bold; }
-    </style>
-</head>
-<body>
-
-<div class="app-container">
-    <header>Familien-Liste 🛒</header>
-    <div class="input-group">
-        <input type="text" id="item-input" placeholder="Was brauchen wir?" autofocus>
-        <button id="add-btn">+</button>
-    </div>
-    <ul id="shopping-list"></ul>
-</div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -51,8 +19,11 @@
     const addBtn = document.getElementById('add-btn');
     const listElement = document.getElementById('shopping-list');
 
-    // Echtzeit-Update von Firebase
-    const q = query(colRef, orderBy("createdAt", "desc"));
+    // Echtzeit-Update mit verbesserter Sortierung:
+    // 1. Zuerst nach 'checked' (false kommt vor true)
+    // 2. Dann nach 'createdAt' (neueste oben)
+    const q = query(colRef, orderBy("checked", "asc"), orderBy("createdAt", "desc"));
+
     onSnapshot(q, (snapshot) => {
         listElement.innerHTML = '';
         snapshot.docs.forEach(docSnap => {
@@ -63,10 +34,10 @@
             li.className = item.checked ? 'checked' : '';
             li.innerHTML = `
                 <span class="item-text">${item.text}</span>
-                <button class="delete-btn">×</button>
+                <button class="delete-btn" title="Löschen">×</button>
             `;
 
-            // Abhaken
+            // Abhaken - schiebt den Artikel durch die neue Sortierung automatisch nach unten
             li.querySelector('.item-text').onclick = () => {
                 updateDoc(doc(db, "shoppingList", id), { checked: !item.checked });
             };
@@ -80,7 +51,6 @@
         });
     });
 
-    // Artikel hinzufügen
     async function addItem() {
         const text = input.value.trim();
         if (text === "") return;
@@ -95,6 +65,3 @@
     addBtn.onclick = addItem;
     input.onkeypress = (e) => { if(e.key === 'Enter') addItem(); };
 </script>
-
-</body>
-</html>
