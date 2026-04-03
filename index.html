@@ -7,42 +7,65 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4CAF50">
+    
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3514/3514491.png">
-
 
     <style>
         :root { --primary: #4CAF50; --bg: #f8f9fa; --danger: #ff5252; }
-        body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
-        #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 10; }
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
+        #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        header { 
+            background: var(--primary); color: white; padding: 15px; text-align: center; 
+            position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        h1 { margin: 0; font-size: 1.4rem; }
+
+        /* Der neue Aufräum-Button */
+        #clear-btn { 
+            background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.5); 
+            color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; 
+            margin-top: 8px; cursor: pointer; transition: background 0.3s;
+        }
+        #clear-btn:active { background: rgba(255,255,255,0.4); }
+
         .input-area { display: flex; padding: 15px; gap: 10px; background: white; border-bottom: 1px solid #eee; }
         input { flex: 1; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; outline: none; }
         button#add-btn { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 24px; }
-        ul { list-style: none; padding: 0; margin: 0; }
-        li { display: flex; align-items: center; padding: 18px 15px; border-bottom: 1px solid #f1f1f1; }
+        
+        ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        li { display: flex; align-items: center; padding: 16px 15px; border-bottom: 1px solid #f1f1f1; animation: slideIn 0.2s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        
         .item-text { flex: 1; cursor: pointer; font-size: 1.1rem; font-weight: 500; }
-        .checked { background: #fafafa; opacity: 0.6; }
-        .checked .item-text { text-decoration: line-through; }
-        .delete-btn { color: var(--danger); background: #fff5f5; border: none; border-radius: 8px; width: 40px; height: 40px; font-size: 1.2rem; }
-        .status-msg { padding: 30px; text-align: center; color: #666; line-height: 1.5; }
-        .error-box { color: #d32f2f; background: #ffebee; padding: 15px; margin: 10px; border-radius: 8px; font-size: 0.9rem; border: 1px solid #ffcdd2; }
+        .checked { background: #fdfdfd; opacity: 0.5; }
+        .checked .item-text { text-decoration: line-through; color: #888; }
+        
+        .delete-btn { color: var(--danger); background: none; border: none; font-size: 1.4rem; padding: 0 10px; opacity: 0.7; }
+        .status-msg { padding: 40px; text-align: center; color: #999; font-size: 0.9rem; }
     </style>
 </head>
 <body>
     <div id="app-container">
-        <header><h1>🛒 Familien Liste</h1></header>
+        <header>
+            <h1>🛒 Familien Liste</h1>
+            <button id="clear-btn">Erledigte löschen 🧹</button>
+        </header>
+        
         <div class="input-area">
             <input type="text" id="item-input" placeholder="Was brauchen wir?" autocomplete="off">
             <button id="add-btn">+</button>
         </div>
+        
         <ul id="shopping-list">
-            <div class="status-msg">Verbindung wird hergestellt...</div>
+            <div class="status-msg">Verbindung wird aufgebaut...</div>
         </ul>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, getDocs, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAHXdu0nscpjeZ-hD4aZGctADhr8dVnpy0",
@@ -69,14 +92,14 @@
         const input = document.getElementById('item-input');
         const addBtn = document.getElementById('add-btn');
         const listElement = document.getElementById('shopping-list');
+        const clearBtn = document.getElementById('clear-btn');
 
-        // Die Sortierung: Nicht abgehakt oben, Zeitstempel absteigend
         const q = query(colRef, orderBy("checked", "asc"), orderBy("createdAt", "desc"));
 
         onSnapshot(q, (snapshot) => {
             listElement.innerHTML = '';
             if (snapshot.empty) {
-                listElement.innerHTML = '<div class="status-msg">Die Liste ist leer. ✨<br><small>Tippe etwas ein, um zu starten.</small></div>';
+                listElement.innerHTML = '<div class="status-msg">Alles erledigt! ✨<br>Die Liste ist leer.</div>';
             }
             snapshot.docs.forEach(docSnap => {
                 const item = docSnap.data();
@@ -84,17 +107,11 @@
                 const li = document.createElement('li');
                 if(item.checked) li.classList.add('checked');
                 li.innerHTML = `<span class="item-text">${item.text}</span><button class="delete-btn">✕</button>`;
+                
                 li.querySelector('.item-text').onclick = () => updateDoc(doc(db, "shoppingList", id), { checked: !item.checked });
                 li.querySelector('.delete-btn').onclick = () => deleteDoc(doc(db, "shoppingList", id));
                 listElement.appendChild(li);
             });
-        }, (error) => {
-            console.error(error);
-            let errorMsg = "Fehler beim Laden der Daten.";
-            if (error.message.includes("index")) {
-                errorMsg = "<strong>Datenbank-Index wird erstellt:</strong><br>Firebase bereitet die Sortierung vor. Das dauert ca. 2-5 Minuten. Bitte lass die Seite einfach offen.";
-            }
-            listElement.innerHTML = `<div class="error-box">${errorMsg}</div>`;
         });
 
         async function addItem() {
@@ -109,6 +126,16 @@
             input.value = '';
             await addDoc(colRef, { text: finalText, checked: false, createdAt: Date.now() });
         }
+
+        // NEU: Funktion zum Aufräumen der Liste
+        clearBtn.onclick = async () => {
+            if (!confirm("Alle abgehakten Artikel löschen?")) return;
+            const qChecked = query(colRef, where("checked", "==", true));
+            const snapshot = await getDocs(qChecked);
+            snapshot.forEach((docSnap) => {
+                deleteDoc(doc(db, "shoppingList", docSnap.id));
+            });
+        };
 
         addBtn.onclick = addItem;
         input.onkeypress = (e) => { if(e.key === 'Enter') addItem(); };
