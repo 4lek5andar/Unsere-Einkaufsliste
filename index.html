@@ -2,138 +2,40 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4CAF50">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Familien Liste 🛒</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/shopping-basket-2.png">
+
     <style>
-        :root {
-            --primary: #4CAF50;
-            --bg: #f8f9fa;
-            --text: #333;
-            --danger: #ff5252;
-        }
-
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            margin: 0; 
-            background: var(--bg); 
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-        }
-
-        #app-container { 
-            width: 100%;
-            max-width: 500px; 
-            background: white; 
-            min-height: 100vh; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
-        }
-
-        header { 
-            background: var(--primary); 
-            color: white; 
-            padding: 20px; 
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        h1 { margin: 0; font-size: 1.5rem; }
-
-        .input-area { 
-            display: flex; 
-            padding: 15px; 
-            gap: 10px; 
-            background: white;
-            border-bottom: 1px solid #eee;
-        }
-
-        input { 
-            flex: 1; 
-            padding: 15px; 
-            border: 2px solid #eee; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        input:focus { border-color: var(--primary); }
-
-        button#add-btn { 
-            padding: 0 20px; 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
-            font-size: 24px;
-            cursor: pointer;
-        }
-
+        :root { --primary: #4CAF50; --bg: #f8f9fa; --danger: #ff5252; }
+        body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
+        #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+        header { background: var(--primary); color: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 10; }
+        .input-area { display: flex; padding: 15px; gap: 10px; background: white; border-bottom: 1px solid #eee; }
+        input { flex: 1; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; outline: none; }
+        button#add-btn { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 24px; }
         ul { list-style: none; padding: 0; margin: 0; }
-
-        li { 
-            display: flex; 
-            align-items: center; 
-            padding: 18px 15px; 
-            border-bottom: 1px solid #f1f1f1; 
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .item-text { 
-            flex: 1; 
-            cursor: pointer; 
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        .checked { background: #fafafa; }
-        .checked .item-text { 
-            text-decoration: line-through; 
-            color: #aaa; 
-        }
-
-        .delete-btn { 
-            color: var(--danger); 
-            background: #fff5f5; 
-            border: none; 
-            border-radius: 8px;
-            width: 40px;
-            height: 40px;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .status-msg {
-            padding: 20px;
-            text-align: center;
-            color: #888;
-            font-style: italic;
-        }
+        li { display: flex; align-items: center; padding: 18px 15px; border-bottom: 1px solid #f1f1f1; }
+        .item-text { flex: 1; cursor: pointer; font-size: 1.1rem; font-weight: 500; }
+        .checked { background: #fafafa; opacity: 0.6; }
+        .checked .item-text { text-decoration: line-through; }
+        .delete-btn { color: var(--danger); background: #fff5f5; border: none; border-radius: 8px; width: 40px; height: 40px; font-size: 1.2rem; }
+        .status-msg { padding: 30px; text-align: center; color: #666; line-height: 1.5; }
+        .error-box { color: #d32f2f; background: #ffebee; padding: 15px; margin: 10px; border-radius: 8px; font-size: 0.9rem; border: 1px solid #ffcdd2; }
     </style>
 </head>
 <body>
     <div id="app-container">
         <header><h1>🛒 Familien Liste</h1></header>
-        
         <div class="input-area">
             <input type="text" id="item-input" placeholder="Was brauchen wir?" autocomplete="off">
             <button id="add-btn">+</button>
         </div>
-
         <ul id="shopping-list">
-            <div class="status-msg">Lade Liste...</div>
+            <div class="status-msg">Verbindung wird hergestellt...</div>
         </ul>
     </div>
 
@@ -141,7 +43,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Deine gespeicherten Firebase-Daten
         const firebaseConfig = {
             apiKey: "AIzaSyAHXdu0nscpjeZ-hD4aZGctADhr8dVnpy0",
             authDomain: "familienliste-292c8.firebaseapp.com",
@@ -156,81 +57,56 @@
         const colRef = collection(db, "shoppingList");
 
         const emojiMap = {
-            'milch': '🥛', 'Brötchen': '🥯', 'kuchen': '🍰', 'fisch': '🐟', 'garnelen': '🍤', 'gurke': '🥒',
-            'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'obst': '🍎',
+            'milch': '🥛', 'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'obst': '🍎',
             'gemüse': '🥦', 'fleisch': '🥩', 'nudeln': '🍝', 'reis': '🍚', 'kaffee': '☕',
             'tee': '🍵', 'wasser': '💧', 'saft': '🧃', 'bier': '🍺', 'wein': '🍷',
             'schokolade': '🍫', 'kekse': '🍪', 'eis': '🍦', 'pizza': '🍕', 'wurst': '🌭',
             'banane': '🍌', 'apfel': '🍎', 'tomate': '🍅', 'kartoffel': '🥔', 'butter': '🧈',
-            'klopapier': '🧻', 'seife': '🧼', 'shampoo': '🧴', 'zahnpasta': '🪥', 'zucker': '🧂'
+            'klopapier': '🧻', 'seife': '🧼', 'shampoo': '🧴', 'zahnpasta': '🪥'
         };
 
         const input = document.getElementById('item-input');
         const addBtn = document.getElementById('add-btn');
         const listElement = document.getElementById('shopping-list');
 
-        // Abfrage: Offenes oben, Erledigtes unten. Innerhalb dessen: Neuestes zuerst.
+        // Die Sortierung: Nicht abgehakt oben, Zeitstempel absteigend
         const q = query(colRef, orderBy("checked", "asc"), orderBy("createdAt", "desc"));
 
         onSnapshot(q, (snapshot) => {
             listElement.innerHTML = '';
             if (snapshot.empty) {
-                listElement.innerHTML = '<div class="status-msg">Liste ist leer. Gut gemacht! 🎉</div>';
+                listElement.innerHTML = '<div class="status-msg">Die Liste ist leer. ✨<br><small>Tippe etwas ein, um zu starten.</small></div>';
             }
-
             snapshot.docs.forEach(docSnap => {
                 const item = docSnap.data();
                 const id = docSnap.id;
                 const li = document.createElement('li');
                 if(item.checked) li.classList.add('checked');
-                
-                li.innerHTML = `
-                    <span class="item-text">${item.text}</span>
-                    <button class="delete-btn">✕</button>
-                `;
-
-                li.querySelector('.item-text').onclick = () => {
-                    updateDoc(doc(db, "shoppingList", id), { checked: !item.checked });
-                };
-
-                li.querySelector('.delete-btn').onclick = () => {
-                    deleteDoc(doc(db, "shoppingList", id));
-                };
-
+                li.innerHTML = `<span class="item-text">${item.text}</span><button class="delete-btn">✕</button>`;
+                li.querySelector('.item-text').onclick = () => updateDoc(doc(db, "shoppingList", id), { checked: !item.checked });
+                li.querySelector('.delete-btn').onclick = () => deleteDoc(doc(db, "shoppingList", id));
                 listElement.appendChild(li);
             });
         }, (error) => {
-            console.error("Firebase Fehler:", error);
-            if(error.message.includes("index")) {
-                listElement.innerHTML = `<div class="status-msg" style="color:red">Index wird erstellt... bitte kurz warten.</div>`;
+            console.error(error);
+            let errorMsg = "Fehler beim Laden der Daten.";
+            if (error.message.includes("index")) {
+                errorMsg = "<strong>Datenbank-Index wird erstellt:</strong><br>Firebase bereitet die Sortierung vor. Das dauert ca. 2-5 Minuten. Bitte lass die Seite einfach offen.";
             }
+            listElement.innerHTML = `<div class="error-box">${errorMsg}</div>`;
         });
 
         async function addItem() {
             const rawText = input.value.trim();
             if (rawText === "") return;
-            
             let icon = "";
             const lowerText = rawText.toLowerCase();
             for (const [key, value] of Object.entries(emojiMap)) {
-                if (lowerText.includes(key)) {
-                    icon = value + " ";
-                    break;
-                }
+                if (lowerText.includes(key)) { icon = value + " "; break; }
             }
-
             const finalText = icon + rawText;
             input.value = '';
-
-            try {
-                await addDoc(colRef, {
-                    text: finalText,
-                    checked: false,
-                    createdAt: Date.now()
-                });
-            } catch (e) {
-                alert("Fehler beim Speichern!");
-            }
+            await addDoc(colRef, { text: finalText, checked: false, createdAt: Date.now() });
         }
 
         addBtn.onclick = addItem;
