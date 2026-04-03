@@ -51,8 +51,7 @@
                 <input type="text" id="item-input" placeholder="Was brauchen wir?" autocomplete="off">
                 <button id="add-btn">+</button>
             </div>
-            <div class="category-select" id="cat-chips">
-                </div>
+            <div class="category-select" id="cat-chips"></div>
         </div>
         
         <div id="list-content">
@@ -77,20 +76,20 @@
         const db = getFirestore(app);
         const colRef = collection(db, "shoppingList");
 
-     const categories = {
-    "Obst & Gemüse": ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel", "orange", "zitrone", "paprika", "lauch", "brokkoli", "möhre", "karotte", "avocado", "weintrauben", "kiwi", "birne"],
-    "Kühlregal": ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne", "milchschnitte", "hummus", "hefe", "frischkäse", "mozzarella"],
-    "Vorrat": ["nudeln", "preis", "mehl", "zucker", "kaffee", "tee", "öl", "konserve", "gewürz", "haferflocken", "chips", "schokolade", "kekse", "nudeln", "spaghetti", "tomatensauce", "backpulver", "honig", "nutella"],
-    "Backwaren": ["brot", "brötchen", "toast", "kuchen", "brezel", "baguette", "croissant"],
-    "Getränke": ["wasser", "saft", "bier", "wein", "cola", "limo", "sprudel", "schorle", "milch", "kaffee"],
-    "Drogerie": ["klopapier", "seife", "shampoo", "zahnpasta", "windeln", "putzmittel", "deo", "duschgel", "taschentücher", "waschmittel"],
-    "Tiefkühl": ["pizza", "pommes", "eis", "spinat", "fischstäbchen", "fertiggericht"],
-    "Sonstiges": []
-};
-
+        // MASSIV ERWEITERTE WORTE-DATENBANK
+        const categories = {
+            "Obst & Gemüse": ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel", "orange", "zitrone", "paprika", "lauch", "brokkoli", "möhre", "karotte", "avocado", "weintrauben", "kiwi", "birne", "knoblauch", "ingwer", "pilze", "kohl", "spinat", "ananas", "melone"],
+            "Kühlregal": ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne", "milchschnitte", "hummus", "hefe", "frischkäse", "mozzarella", "fleisch", "hähnchen", "hackfleisch", "fisch", "tofu", "vegan"],
+            "Vorrat": ["nudeln", "reis", "mehl", "zucker", "kaffee", "tee", "öl", "konserve", "gewürz", "haferflocken", "chips", "schokolade", "kekse", "spaghetti", "tomatensauce", "backpulver", "honig", "nutella", "müsli", "salz", "pfeffer", "essig"],
+            "Backwaren": ["brot", "brötchen", "toast", "kuchen", "brezel", "baguette", "croissant", "pizzateig"],
+            "Getränke": ["wasser", "saft", "bier", "wein", "cola", "limo", "sprudel", "schorle", "energy", "eistee", "milch", "mineralwasser"],
+            "Drogerie": ["klopapier", "seife", "shampoo", "zahnpasta", "windeln", "putzmittel", "deo", "duschgel", "taschentücher", "waschmittel", "spülmittel", "küchenrolle", "zahnbürste"],
+            "Tiefkühl": ["pizza", "pommes", "eis", "fischstäbchen", "fertiggericht", "tk", "beeren", "eiswürfel"],
+            "Sonstiges": []
+        };
 
         const emojiMap = {
-            'milch': '🥛', 'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'obst': '🍎', 'gemüse': '🥦', 'fleisch': '🥩', 'kaffee': '☕', 'wasser': '💧', 'klopapier': '🧻'
+            'milch': '🥛', 'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'apfel': '🍎', 'orange': '🍊', 'banane': '🍌', 'gemüse': '🥦', 'bier': '🍺', 'pizza': '🍕', 'klopapier': '🧻', 'kaffee': '☕', 'fleisch': '🥩', 'fisch': '🐟'
         };
 
         let selectedCategory = "Sonstiges";
@@ -99,7 +98,6 @@
         const listContent = document.getElementById('list-content');
         const catChipsContainer = document.getElementById('cat-chips');
 
-        // Chips erstellen
         Object.keys(categories).forEach(cat => {
             const chip = document.createElement('div');
             chip.className = `cat-chip ${cat === "Sonstiges" ? "active" : ""}`;
@@ -112,9 +110,9 @@
             catChipsContainer.appendChild(chip);
         });
 
-        // Automatische Kategoriewahl beim Tippen
         input.oninput = () => {
             const val = input.value.toLowerCase();
+            if (val === "") return;
             for (const [cat, keywords] of Object.entries(categories)) {
                 if (keywords.some(k => val.includes(k))) {
                     selectedCategory = cat;
@@ -143,7 +141,6 @@
                 const id = docSnap.id;
                 const cat = item.category || "Sonstiges";
 
-                // Neue Kategorie-Überschrift (nur wenn nicht abgehakt)
                 if (cat !== currentCat && !item.checked) {
                     currentCat = cat;
                     const head = document.createElement('div');
@@ -191,6 +188,11 @@
                 checked: false, 
                 category: categoryToSave,
                 createdAt: Date.now() 
+            });
+            // Reset Chip
+            selectedCategory = "Sonstiges";
+            document.querySelectorAll('.cat-chip').forEach(c => {
+                c.classList.toggle('active', c.innerText === "Sonstiges");
             });
         }
 
