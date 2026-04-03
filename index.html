@@ -3,35 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Familien Liste</title>
+    <title>Familien Liste 🛒</title>
     <style>
-        body { font-family: sans-serif; margin: 0; background: #f4f4f9; }
-        #app-container { max-width: 500px; margin: auto; background: white; min-height: 100vh; }
-        header { background: #4CAF50; color: white; padding: 1rem; text-align: center; }
-        .input-area { display: flex; padding: 10px; gap: 5px; }
-        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
-        button#add-btn { padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        :root {
+            --primary: #4CAF50;
+            --bg: #f8f9fa;
+            --text: #333;
+            --danger: #ff5252;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+        }
+
+        #app-container { 
+            width: 100%;
+            max-width: 500px; 
+            background: white; 
+            min-height: 100vh; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        header { 
+            background: var(--primary); 
+            color: white; 
+            padding: 20px; 
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; }
+
+        .input-area { 
+            display: flex; 
+            padding: 15px; 
+            gap: 10px; 
+            background: white;
+            border-bottom: 1px solid #eee;
+        }
+
+        input { 
+            flex: 1; 
+            padding: 15px; 
+            border: 2px solid #eee; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        button#add-btn { 
+            padding: 0 20px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 24px;
+            cursor: pointer;
+        }
+
         ul { list-style: none; padding: 0; margin: 0; }
-        li { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; font-size: 1.1rem; }
-        .item-text { flex: 1; cursor: pointer; }
-        .checked .item-text { text-decoration: line-through; color: #888; }
-        .delete-btn { color: #ff5252; background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0 10px; }
+
+        li { 
+            display: flex; 
+            align-items: center; 
+            padding: 18px 15px; 
+            border-bottom: 1px solid #f1f1f1; 
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .item-text { 
+            flex: 1; 
+            cursor: pointer; 
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .checked { background: #fafafa; }
+        .checked .item-text { 
+            text-decoration: line-through; 
+            color: #aaa; 
+        }
+
+        .delete-btn { 
+            color: var(--danger); 
+            background: #fff5f5; 
+            border: none; 
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-msg {
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
     <div id="app-container">
-        <header><h1>Einkaufsliste</h1></header>
+        <header><h1>🛒 Familien Liste</h1></header>
+        
         <div class="input-area">
-            <input type="text" id="item-input" placeholder="Was brauchen wir?">
+            <input type="text" id="item-input" placeholder="Was brauchen wir?" autocomplete="off">
             <button id="add-btn">+</button>
         </div>
-        <ul id="shopping-list"></ul>
+
+        <ul id="shopping-list">
+            <div class="status-msg">Lade Liste...</div>
+        </ul>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // Deine gespeicherten Firebase-Daten
         const firebaseConfig = {
             apiKey: "AIzaSyAHXdu0nscpjeZ-hD4aZGctADhr8dVnpy0",
             authDomain: "familienliste-292c8.firebaseapp.com",
@@ -45,14 +152,28 @@
         const db = getFirestore(app);
         const colRef = collection(db, "shoppingList");
 
+        const emojiMap = {
+            'milch': '🥛', 'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'obst': '🍎',
+            'gemüse': '🥦', 'fleisch': '🥩', 'nudeln': '🍝', 'reis': '🍚', 'kaffee': '☕',
+            'tee': '🍵', 'wasser': '💧', 'saft': '🧃', 'bier': '🍺', 'wein': '🍷',
+            'schokolade': '🍫', 'kekse': '🍪', 'eis': '🍦', 'pizza': '🍕', 'wurst': '🌭',
+            'banane': '🍌', 'apfel': '🍎', 'tomate': '🍅', 'kartoffel': '🥔', 'butter': '🧈',
+            'klopapier': '🧻', 'seife': '🧼', 'shampoo': '🧴', 'zahnpasta': '🪥', 'zucker': '🧂'
+        };
+
         const input = document.getElementById('item-input');
         const addBtn = document.getElementById('add-btn');
         const listElement = document.getElementById('shopping-list');
 
+        // Abfrage: Offenes oben, Erledigtes unten. Innerhalb dessen: Neuestes zuerst.
         const q = query(colRef, orderBy("checked", "asc"), orderBy("createdAt", "desc"));
 
         onSnapshot(q, (snapshot) => {
             listElement.innerHTML = '';
+            if (snapshot.empty) {
+                listElement.innerHTML = '<div class="status-msg">Liste ist leer. Gut gemacht! 🎉</div>';
+            }
+
             snapshot.docs.forEach(docSnap => {
                 const item = docSnap.data();
                 const id = docSnap.id;
@@ -61,7 +182,7 @@
                 
                 li.innerHTML = `
                     <span class="item-text">${item.text}</span>
-                    <button class="delete-btn">×</button>
+                    <button class="delete-btn">✕</button>
                 `;
 
                 li.querySelector('.item-text').onclick = () => {
@@ -76,21 +197,36 @@
             });
         }, (error) => {
             console.error("Firebase Fehler:", error);
-            // Kleiner Trick: Wenn der Index fehlt, zeigt er uns den Fehler im UI
             if(error.message.includes("index")) {
-                listElement.innerHTML = `<li style="color:red; font-size:0.8rem;">Datenbank-Index wird noch erstellt... bitte 1 Min warten.</li>`;
+                listElement.innerHTML = `<div class="status-msg" style="color:red">Index wird erstellt... bitte kurz warten.</div>`;
             }
         });
 
         async function addItem() {
-            const text = input.value.trim();
-            if (text === "") return;
+            const rawText = input.value.trim();
+            if (rawText === "") return;
+            
+            let icon = "";
+            const lowerText = rawText.toLowerCase();
+            for (const [key, value] of Object.entries(emojiMap)) {
+                if (lowerText.includes(key)) {
+                    icon = value + " ";
+                    break;
+                }
+            }
+
+            const finalText = icon + rawText;
             input.value = '';
-            await addDoc(colRef, {
-                text: text,
-                checked: false,
-                createdAt: Date.now()
-            });
+
+            try {
+                await addDoc(colRef, {
+                    text: finalText,
+                    checked: false,
+                    createdAt: Date.now()
+                });
+            } catch (e) {
+                alert("Fehler beim Speichern!");
+            }
         }
 
         addBtn.onclick = addItem;
