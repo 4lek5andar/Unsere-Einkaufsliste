@@ -77,15 +77,17 @@
         const db = getFirestore(app);
         const colRef = collection(db, "shoppingList");
 
-        const categories = {
-            "Obst & Gemüse": ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel"],
-            "Kühlregal": ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne"],
-            "Vorrat": ["nudeln", "reis", "mehl", "zucker", "kaffee", "tee", "öl", "konserve", "gewürz", "haferflocken"],
-            "Backwaren": ["brot", "brötchen", "toast", "kuchen", "brezel"],
-            "Getränke": ["wasser", "saft", "bier", "wein", "cola", "limo"],
-            "Drogerie": ["klopapier", "seife", "shampoo", "zahnpasta", "windeln", "putzmittel"],
-            "Sonstiges": []
-        };
+     const categories = {
+    "Obst & Gemüse": ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel", "orange", "zitrone", "paprika", "lauch", "brokkoli", "möhre", "karotte", "avocado", "weintrauben", "kiwi", "birne"],
+    "Kühlregal": ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne", "milchschnitte", "hummus", "hefe", "frischkäse", "mozzarella"],
+    "Vorrat": ["nudeln", "preis", "mehl", "zucker", "kaffee", "tee", "öl", "konserve", "gewürz", "haferflocken", "chips", "schokolade", "kekse", "nudeln", "spaghetti", "tomatensauce", "backpulver", "honig", "nutella"],
+    "Backwaren": ["brot", "brötchen", "toast", "kuchen", "brezel", "baguette", "croissant"],
+    "Getränke": ["wasser", "saft", "bier", "wein", "cola", "limo", "sprudel", "schorle", "milch", "kaffee"],
+    "Drogerie": ["klopapier", "seife", "shampoo", "zahnpasta", "windeln", "putzmittel", "deo", "duschgel", "taschentücher", "waschmittel"],
+    "Tiefkühl": ["pizza", "pommes", "eis", "spinat", "fischstäbchen", "fertiggericht"],
+    "Sonstiges": []
+};
+
 
         const emojiMap = {
             'milch': '🥛', 'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'obst': '🍎', 'gemüse': '🥦', 'fleisch': '🥩', 'kaffee': '☕', 'wasser': '💧', 'klopapier': '🧻'
