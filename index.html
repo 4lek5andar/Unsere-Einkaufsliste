@@ -4,46 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Familien Liste 🛒</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4CAF50">
-    
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3514/3514491.png">
 
     <style>
-        :root { --primary: #4CAF50; --bg: #f8f9fa; --danger: #ff5252; }
+        :root { --primary: #4CAF50; --bg: #f8f9fa; --danger: #ff5252; --gray: #999; }
         body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
         #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; }
         
-        header { 
-            background: var(--primary); color: white; padding: 15px; text-align: center; 
-            position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
+        header { background: var(--primary); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         h1 { margin: 0; font-size: 1.4rem; }
+        #clear-btn { background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; margin-top: 8px; cursor: pointer; }
 
-        /* Der neue Aufräum-Button */
-        #clear-btn { 
-            background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.5); 
-            color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; 
-            margin-top: 8px; cursor: pointer; transition: background 0.3s;
-        }
-        #clear-btn:active { background: rgba(255,255,255,0.4); }
+        .input-area { padding: 15px; background: white; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 10px; }
+        .input-row { display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; outline: none; }
+        button#add-btn { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 24px; cursor: pointer; }
+        
+        .category-select { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .category-select::-webkit-scrollbar { display: none; }
+        .cat-chip { padding: 6px 12px; background: #eee; border-radius: 15px; font-size: 0.75rem; white-space: nowrap; cursor: pointer; border: 2px solid transparent; }
+        .cat-chip.active { background: #e8f5e9; border-color: var(--primary); color: var(--primary); font-weight: bold; }
 
-        .input-area { display: flex; padding: 15px; gap: 10px; background: white; border-bottom: 1px solid #eee; }
-        input { flex: 1; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; outline: none; }
-        button#add-btn { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 24px; }
+        .category-header { background: #f0f0f0; padding: 5px 15px; font-size: 0.8rem; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
         
-        ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
-        li { display: flex; align-items: center; padding: 16px 15px; border-bottom: 1px solid #f1f1f1; animation: slideIn 0.2s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { display: flex; align-items: center; padding: 14px 15px; border-bottom: 1px solid #f9f9f9; background: white; }
+        .item-text { flex: 1; cursor: pointer; font-size: 1.05rem; }
+        .checked { opacity: 0.4; background: #fafafa; }
+        .checked .item-text { text-decoration: line-through; }
         
-        .item-text { flex: 1; cursor: pointer; font-size: 1.1rem; font-weight: 500; }
-        .checked { background: #fdfdfd; opacity: 0.5; }
-        .checked .item-text { text-decoration: line-through; color: #888; }
-        
-        .delete-btn { color: var(--danger); background: none; border: none; font-size: 1.4rem; padding: 0 10px; opacity: 0.7; }
-        .status-msg { padding: 40px; text-align: center; color: #999; font-size: 0.9rem; }
+        .delete-btn { color: var(--danger); background: none; border: none; font-size: 1.2rem; padding: 0 10px; cursor: pointer; }
+        .status-msg { padding: 40px; text-align: center; color: #999; }
     </style>
 </head>
 <body>
@@ -54,13 +47,17 @@
         </header>
         
         <div class="input-area">
-            <input type="text" id="item-input" placeholder="Was brauchen wir?" autocomplete="off">
-            <button id="add-btn">+</button>
+            <div class="input-row">
+                <input type="text" id="item-input" placeholder="Was brauchen wir?" autocomplete="off">
+                <button id="add-btn">+</button>
+            </div>
+            <div class="category-select" id="cat-chips">
+                </div>
         </div>
         
-        <ul id="shopping-list">
-            <div class="status-msg">Verbindung wird aufgebaut...</div>
-        </ul>
+        <div id="list-content">
+            <div class="status-msg">Lade Liste...</div>
+        </div>
     </div>
 
     <script type="module">
@@ -80,61 +77,126 @@
         const db = getFirestore(app);
         const colRef = collection(db, "shoppingList");
 
-        const emojiMap = {
-            'milch': '🥛', 'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'obst': '🍎',
-            'gemüse': '🥦', 'fleisch': '🥩', 'nudeln': '🍝', 'reis': '🍚', 'kaffee': '☕',
-            'tee': '🍵', 'wasser': '💧', 'saft': '🧃', 'bier': '🍺', 'wein': '🍷',
-            'schokolade': '🍫', 'kekse': '🍪', 'eis': '🍦', 'pizza': '🍕', 'wurst': '🌭',
-            'banane': '🍌', 'apfel': '🍎', 'tomate': '🍅', 'kartoffel': '🥔', 'butter': '🧈',
-            'klopapier': '🧻', 'seife': '🧼', 'shampoo': '🧴', 'zahnpasta': '🪥'
+        const categories = {
+            "Obst & Gemüse": ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel"],
+            "Kühlregal": ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne"],
+            "Vorrat": ["nudeln", "reis", "mehl", "zucker", "kaffee", "tee", "öl", "konserve", "gewürz", "haferflocken"],
+            "Backwaren": ["brot", "brötchen", "toast", "kuchen", "brezel"],
+            "Getränke": ["wasser", "saft", "bier", "wein", "cola", "limo"],
+            "Drogerie": ["klopapier", "seife", "shampoo", "zahnpasta", "windeln", "putzmittel"],
+            "Sonstiges": []
         };
 
+        const emojiMap = {
+            'milch': '🥛', 'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'obst': '🍎', 'gemüse': '🥦', 'fleisch': '🥩', 'kaffee': '☕', 'wasser': '💧', 'klopapier': '🧻'
+        };
+
+        let selectedCategory = "Sonstiges";
         const input = document.getElementById('item-input');
         const addBtn = document.getElementById('add-btn');
-        const listElement = document.getElementById('shopping-list');
-        const clearBtn = document.getElementById('clear-btn');
+        const listContent = document.getElementById('list-content');
+        const catChipsContainer = document.getElementById('cat-chips');
 
-        const q = query(colRef, orderBy("checked", "asc"), orderBy("createdAt", "desc"));
+        // Chips erstellen
+        Object.keys(categories).forEach(cat => {
+            const chip = document.createElement('div');
+            chip.className = `cat-chip ${cat === "Sonstiges" ? "active" : ""}`;
+            chip.innerText = cat;
+            chip.onclick = () => {
+                document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                selectedCategory = cat;
+            };
+            catChipsContainer.appendChild(chip);
+        });
+
+        // Automatische Kategoriewahl beim Tippen
+        input.oninput = () => {
+            const val = input.value.toLowerCase();
+            for (const [cat, keywords] of Object.entries(categories)) {
+                if (keywords.some(k => val.includes(k))) {
+                    selectedCategory = cat;
+                    document.querySelectorAll('.cat-chip').forEach(c => {
+                        c.classList.toggle('active', c.innerText === cat);
+                    });
+                    break;
+                }
+            }
+        };
+
+        const q = query(colRef, orderBy("checked", "asc"), orderBy("category", "asc"), orderBy("createdAt", "desc"));
 
         onSnapshot(q, (snapshot) => {
-            listElement.innerHTML = '';
+            listContent.innerHTML = '';
             if (snapshot.empty) {
-                listElement.innerHTML = '<div class="status-msg">Alles erledigt! ✨<br>Die Liste ist leer.</div>';
+                listContent.innerHTML = '<div class="status-msg">Alles erledigt! ✨</div>';
+                return;
             }
+
+            let currentCat = "";
+            let currentUl = null;
+
             snapshot.docs.forEach(docSnap => {
                 const item = docSnap.data();
                 const id = docSnap.id;
+                const cat = item.category || "Sonstiges";
+
+                // Neue Kategorie-Überschrift (nur wenn nicht abgehakt)
+                if (cat !== currentCat && !item.checked) {
+                    currentCat = cat;
+                    const head = document.createElement('div');
+                    head.className = 'category-header';
+                    head.innerText = cat;
+                    listContent.appendChild(head);
+                    currentUl = document.createElement('ul');
+                    listContent.appendChild(currentUl);
+                } else if (item.checked && currentCat !== "Erledigt") {
+                    currentCat = "Erledigt";
+                    const head = document.createElement('div');
+                    head.className = 'category-header';
+                    head.innerText = "Abgehakt ✅";
+                    listContent.appendChild(head);
+                    currentUl = document.createElement('ul');
+                    listContent.appendChild(currentUl);
+                }
+
                 const li = document.createElement('li');
                 if(item.checked) li.classList.add('checked');
                 li.innerHTML = `<span class="item-text">${item.text}</span><button class="delete-btn">✕</button>`;
                 
                 li.querySelector('.item-text').onclick = () => updateDoc(doc(db, "shoppingList", id), { checked: !item.checked });
                 li.querySelector('.delete-btn').onclick = () => deleteDoc(doc(db, "shoppingList", id));
-                listElement.appendChild(li);
+                currentUl.appendChild(li);
             });
         });
 
         async function addItem() {
             const rawText = input.value.trim();
             if (rawText === "") return;
+            
             let icon = "";
             const lowerText = rawText.toLowerCase();
             for (const [key, value] of Object.entries(emojiMap)) {
                 if (lowerText.includes(key)) { icon = value + " "; break; }
             }
+
             const finalText = icon + rawText;
+            const categoryToSave = selectedCategory;
+            
             input.value = '';
-            await addDoc(colRef, { text: finalText, checked: false, createdAt: Date.now() });
+            await addDoc(colRef, { 
+                text: finalText, 
+                checked: false, 
+                category: categoryToSave,
+                createdAt: Date.now() 
+            });
         }
 
-        // NEU: Funktion zum Aufräumen der Liste
-        clearBtn.onclick = async () => {
+        document.getElementById('clear-btn').onclick = async () => {
             if (!confirm("Alle abgehakten Artikel löschen?")) return;
             const qChecked = query(colRef, where("checked", "==", true));
             const snapshot = await getDocs(qChecked);
-            snapshot.forEach((docSnap) => {
-                deleteDoc(doc(db, "shoppingList", docSnap.id));
-            });
+            snapshot.forEach(d => deleteDoc(doc(db, "shoppingList", d.id)));
         };
 
         addBtn.onclick = addItem;
