@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Familien Liste 🛒</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
             --primary: #4CAF50; --bg: #f4f7f6; --danger: #ff5252; 
@@ -17,25 +18,21 @@
         h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; }
         .header-btns { display: flex; justify-content: center; gap: 10px; margin-top: 8px; }
         .action-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; cursor: pointer; text-transform: uppercase; }
+        
         #import-area { display: none; padding: 15px; background: #eee; border-bottom: 2px solid #ddd; }
         #import-textarea { width: 100%; height: 120px; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-family: inherit; box-sizing: border-box; resize: none; width: 100%; }
         #import-confirm-btn { background: var(--primary); color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; margin-top: 8px; font-weight: bold; cursor: pointer; }
+        
         .input-area { padding: 15px; background: white; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 10px; }
         .input-row { display: flex; gap: 10px; }
         input { flex: 1; padding: 14px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; outline: none; }
         input:focus { border-color: var(--primary); }
         button#add-btn { padding: 0 22px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 26px; cursor: pointer; }
+        
         .category-select { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
         .cat-chip { padding: 7px 14px; background: #f0f0f0; border-radius: 20px; font-size: 0.75rem; white-space: nowrap; cursor: pointer; border: 2px solid transparent; color: #666; }
         .cat-chip.active { color: white; font-weight: bold; }
-        .cat-chip[data-cat="Obst & Gemüse"].active { background: var(--color-obst); }
-        .cat-chip[data-cat="Kühlregal"].active { background: var(--color-kuehl); }
-        .cat-chip[data-cat="Vorrat"].active { background: var(--color-vorrat); }
-        .cat-chip[data-cat="Backwaren"].active { background: var(--color-back); }
-        .cat-chip[data-cat="Getränke"].active { background: var(--color-getraenke); }
-        .cat-chip[data-cat="Drogerie"].active { background: var(--color-drogerie); }
-        .cat-chip[data-cat="Tiefkühl"].active { background: var(--color-tk); }
-        .cat-chip[data-cat="Sonstiges"].active { background: var(--color-sonst); }
+        
         .category-header { padding: 8px 15px; font-size: 0.75rem; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
         .head-obst { background: var(--color-obst); }
         .head-kuehl { background: var(--color-kuehl); }
@@ -46,6 +43,7 @@
         .head-tk { background: var(--color-tk); }
         .head-sonst { background: var(--color-sonst); }
         .head-done { background: #ccc; }
+
         ul { list-style: none; padding: 0; margin: 0; }
         li { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f1f1f1; background: white; border-left: 5px solid transparent; }
         li.cat-obst { border-left-color: var(--color-obst); }
@@ -56,12 +54,17 @@
         li.cat-drogerie { border-left-color: var(--color-drogerie); }
         li.cat-tk { border-left-color: var(--color-tk); }
         li.cat-sonst { border-left-color: var(--color-sonst); }
+
         .item-text-wrapper { flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer; }
         .amount-badge { background: #f0f0f0; color: #666; font-size: 0.75rem; font-weight: bold; padding: 2px 8px; border-radius: 6px; border: 1px solid #ddd; }
         .item-name { font-size: 1.1rem; color: #333; }
         .checked { opacity: 0.4; background: #f9f9f9; border-left-color: #ccc !important; }
         .checked .item-name { text-decoration: line-through; }
         .delete-btn { color: #ccc; background: none; border: none; font-size: 1.2rem; padding: 0 5px; cursor: pointer; }
+        
+        /* Chart Bereich */
+        #chart-container { padding: 20px; border-top: 5px solid #f4f7f6; margin-top: 20px; background: white; }
+        h2.chart-title { font-size: 0.9rem; text-align: center; color: #666; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
         .status-msg { padding: 50px 20px; text-align: center; color: #aaa; }
     </style>
 </head>
@@ -74,10 +77,12 @@
                 <button class="action-btn" id="clear-btn">Aufräumen 🧹</button>
             </div>
         </header>
+
         <div id="import-area">
             <textarea id="import-textarea" placeholder="Liste hier einfügen..."></textarea>
             <button id="import-confirm-btn">Hinzufügen 🚀</button>
         </div>
+
         <div class="input-area">
             <div class="input-row">
                 <input type="text" id="item-input" placeholder="Was brauchen wir?" autocomplete="off">
@@ -85,7 +90,13 @@
             </div>
             <div class="category-select" id="cat-chips"></div>
         </div>
-        <div id="list-content"><div class="status-msg">Verbinde mit Cloud...</div></div>
+
+        <div id="list-content"><div class="status-msg">Verbinde...</div></div>
+
+        <div id="chart-container">
+            <h2 class="chart-title">Makronährstoffe (Einkaufstasche)</h2>
+            <canvas id="macroChart"></canvas>
+        </div>
     </div>
 
     <script type="module">
@@ -105,6 +116,25 @@
         const db = getFirestore(app);
         const colRef = collection(db, "shoppingList");
 
+        // Statische Nährwert-Datenbank (Werte pro 100g)
+        const nutritionDB = {
+            "hähnchen": { p: 27, c: 0, f: 3 },
+            "puten": { p: 24, c: 0, f: 2 },
+            "lachs": { p: 20, c: 0, f: 13 },
+            "eier": { p: 13, c: 1, f: 11 },
+            "quark": { p: 12, c: 4, f: 0.2 },
+            "haferflocken": { p: 13, c: 60, f: 7 },
+            "nudeln": { p: 5, c: 30, f: 1 },
+            "reis": { p: 3, c: 28, f: 0.5 },
+            "käse": { p: 25, c: 1, f: 30 },
+            "apfel": { p: 0.3, c: 14, f: 0.2 },
+            "banane": { p: 1.1, c: 23, f: 0.3 },
+            "rucola": { p: 2.6, c: 2, f: 0.7 },
+            "avocado": { p: 2, c: 9, f: 15 },
+            "hackfleisch": { p: 20, c: 0, f: 15 },
+            "milch": { p: 3.4, c: 4.8, f: 1.5 }
+        };
+
         const categories = {
             "Obst & Gemüse": { class: "obst", words: ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel", "orange", "zitrone", "paprika", "lauch", "brokkoli", "möhre", "karotte", "avocado", "rucola", "weintrauben", "kiwi", "birne", "knoblauch", "ingwer", "pilze", "kohl", "spinat", "ananas", "melone"] },
             "Kühlregal": { class: "kuehl", words: ["milch", "lachs", "creme fraiche", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne", "milchschnitte", "hummus", "hefe", "frischkäse", "mozzarella", "fleisch", "hähnchen", "hackfleisch", "fisch", "tofu", "vegan"] },
@@ -116,6 +146,76 @@
             "Sonstiges": { class: "sonst", words: [] }
         };
 
+        let macroChart = null;
+
+        function initChart() {
+            const ctx = document.getElementById('macroChart').getContext('2d');
+            macroChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Proteine (g)', 'Kohlenhydrate (g)', 'Fette (g)'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ['#2196f3', '#ff9800', '#ff5252'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { legend: { position: 'bottom' } },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        function extractAmount(text) {
+            const regex = /^(\d+[\.,]?\d*\s*(x|g|kg|l|ml|pck|stk|bund|dose|flasche|stück)?\s+)|(\s+\d+[\.,]?\d*\s*(x|g|kg|l|ml|pck|stk|bund|dose|flasche|stück)?)$/i;
+            const match = text.match(regex);
+            if (match) {
+                let amountStr = match[0].trim().toLowerCase();
+                let numeric = parseFloat(amountStr.replace(',', '.'));
+                let unit = amountStr.replace(/[0-9\.,\s]/g, "");
+                
+                // Normalisierung auf Gramm/Einheiten
+                let factor = 100; // Standard falls nur "1x" steht
+                if (unit === "g") factor = numeric;
+                else if (unit === "kg") factor = numeric * 1000;
+                else if (unit === "ml") factor = numeric; // 1ml ca 1g
+                else if (unit === "l") factor = numeric * 1000;
+                else factor = numeric * 150; // Schätzung für "1 Stück/Packung"
+
+                return { amount: amountStr, name: text.replace(match[0], "").trim(), weight: factor };
+            }
+            return { amount: null, name: text, weight: 150 }; // Default 150g falls keine Angabe
+        }
+
+        function calculateMacros(docs) {
+            let totalP = 0, totalC = 0, totalF = 0;
+            docs.forEach(d => {
+                const item = d.data();
+                if (item.checked) return; // Nur offene Artikel berechnen
+
+                const { name, weight } = extractAmount(item.text);
+                const lowerName = name.toLowerCase();
+
+                for (let key in nutritionDB) {
+                    if (lowerName.includes(key)) {
+                        const ratio = weight / 100;
+                        totalP += nutritionDB[key].p * ratio;
+                        totalC += nutritionDB[key].c * ratio;
+                        totalF += nutritionDB[key].f * ratio;
+                        break;
+                    }
+                }
+            });
+            
+            if (macroChart) {
+                macroChart.data.datasets[0].data = [totalP.toFixed(0), totalC.toFixed(0), totalF.toFixed(0)];
+                macroChart.update();
+            }
+        }
+
+        // --- REST DER APP LOGIK (Kategorien, Firebase etc.) ---
         let selectedCategory = "Sonstiges";
         const input = document.getElementById('item-input');
         const listContent = document.getElementById('list-content');
@@ -134,33 +234,14 @@
             catChipsContainer.appendChild(chip);
         });
 
-        function extractAmount(text) {
-            const regex = /^(\d+[\.,]?\d*\s*(x|g|kg|l|ml|pck|stk|bund|dose|flasche|stück)?\s+)|(\s+\d+[\.,]?\d*\s*(x|g|kg|l|ml|pck|stk|bund|dose|flasche|stück)?)$/i;
-            const match = text.match(regex);
-            if (match) {
-                const amount = match[0].trim();
-                const name = text.replace(match[0], "").trim();
-                return { amount, name };
-            }
-            return { amount: null, name: text };
-        }
-
-        function getCategoryByText(text) {
-            const lt = text.toLowerCase();
-            for (const [cName, data] of Object.entries(categories)) {
-                if (data.words.some(w => lt.includes(w))) return cName;
-            }
-            return "Sonstiges";
-        }
-
-        input.oninput = () => {
-            const cat = getCategoryByText(input.value);
-            selectedCategory = cat;
-            document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.getAttribute('data-cat') === cat));
-        };
-
         async function save(txt, cat) {
-            const finalCat = cat || getCategoryByText(txt);
+            const lt = txt.toLowerCase();
+            let finalCat = cat || "Sonstiges";
+            if(!cat) {
+                for (const [cName, data] of Object.entries(categories)) {
+                    if (data.words.some(w => lt.includes(w))) { finalCat = cName; break; }
+                }
+            }
             await addDoc(colRef, { text: txt, checked: false, category: finalCat, createdAt: Date.now() });
         }
 
@@ -170,24 +251,11 @@
             input.value = '';
         };
 
-        document.getElementById('import-confirm-btn').onclick = async () => {
-            const area = document.getElementById('import-textarea');
-            const lines = area.value.split('\n').filter(l => l.trim() !== "");
-            for (const l of lines) await save(l.trim());
-            area.value = '';
-            document.getElementById('import-area').style.display = 'none';
-        };
-
-        document.getElementById('toggle-import').onclick = () => {
-            const a = document.getElementById('import-area');
-            a.style.display = a.style.display === 'block' ? 'none' : 'block';
-        };
-
-        const q = query(colRef, orderBy("checked", "asc"), orderBy("category", "asc"), orderBy("createdAt", "desc"));
-        onSnapshot(q, (snap) => {
+        // Snapshot Listener
+        onSnapshot(query(colRef, orderBy("checked", "asc"), orderBy("category", "asc"), orderBy("createdAt", "desc")), (snap) => {
+            calculateMacros(snap.docs); // Chart updaten
             listContent.innerHTML = '';
-            let cur = "";
-            let ul = null;
+            let cur = ""; let ul = null;
             snap.docs.forEach(d => {
                 const item = d.data();
                 const cat = item.category || "Sonstiges";
@@ -195,7 +263,7 @@
                 if ((cat !== cur && !item.checked) || (item.checked && cur !== "Done")) {
                     cur = item.checked ? "Done" : cat;
                     const h = document.createElement('div');
-                    h.className = `category-header ${item.checked ? 'head-done' : 'head-'+categories[cat]?.class}`;
+                    h.className = `category-header ${item.checked ? 'head-done' : 'head-'+(categories[cat]?.class || 'sonst')}`;
                     h.innerText = item.checked ? "Erledigt ✅" : cat;
                     listContent.appendChild(h);
                     ul = document.createElement('ul');
@@ -210,11 +278,25 @@
             });
         });
 
+        // Hilfsfunktionen für UI
+        document.getElementById('toggle-import').onclick = () => {
+            const a = document.getElementById('import-area');
+            a.style.display = a.style.display === 'block' ? 'none' : 'block';
+        };
+        document.getElementById('import-confirm-btn').onclick = async () => {
+            const area = document.getElementById('import-textarea');
+            const lines = area.value.split('\n').filter(l => l.trim() !== "");
+            for (const l of lines) await save(l.trim());
+            area.value = ''; document.getElementById('import-area').style.display = 'none';
+        };
         document.getElementById('clear-btn').onclick = async () => {
             if(!confirm("Abgehakte löschen?")) return;
-            const snap = await getDocs(query(colRef, where("checked", "==", true)));
-            snap.forEach(d => deleteDoc(doc(db, "shoppingList", d.id)));
+            const s = await getDocs(query(colRef, where("checked", "==", true)));
+            s.forEach(d => deleteDoc(doc(db, "shoppingList", d.id)));
         };
+
+        // Start
+        initChart();
     </script>
 </body>
 </html>
