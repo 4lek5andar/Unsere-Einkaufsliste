@@ -9,40 +9,86 @@
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3514/3514491.png">
 
     <style>
-        :root { --primary: #4CAF50; --bg: #f8f9fa; --danger: #ff5252; --gray: #999; }
-        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
-        #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; }
+        :root { 
+            --primary: #4CAF50; --bg: #f4f7f6; --danger: #ff5252; 
+            /* Kategorien-Farben */
+            --color-obst: #4caf50; --color-kuehl: #2196f3; --color-vorrat: #ff9800;
+            --color-back: #795548; --color-getraenke: #00bcd4; --color-drogerie: #9c27b0;
+            --color-tk: #03a9f4; --color-sonst: #607d8b;
+        }
         
-        header { background: var(--primary); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h1 { margin: 0; font-size: 1.4rem; }
-        #clear-btn { background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; margin-top: 8px; cursor: pointer; }
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
+        #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+        
+        header { background: var(--primary); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 10; }
+        h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; }
+        #clear-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; margin-top: 8px; cursor: pointer; text-transform: uppercase; }
 
         .input-area { padding: 15px; background: white; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 10px; }
         .input-row { display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; outline: none; }
-        button#add-btn { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 24px; cursor: pointer; }
+        input { flex: 1; padding: 14px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; outline: none; transition: border-color 0.3s; }
+        input:focus { border-color: var(--primary); }
+        button#add-btn { padding: 0 22px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 26px; cursor: pointer; }
         
-        .category-select { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .category-select { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
         .category-select::-webkit-scrollbar { display: none; }
-        .cat-chip { padding: 6px 12px; background: #eee; border-radius: 15px; font-size: 0.75rem; white-space: nowrap; cursor: pointer; border: 2px solid transparent; }
-        .cat-chip.active { background: #e8f5e9; border-color: var(--primary); color: var(--primary); font-weight: bold; }
-
-        .category-header { background: #f0f0f0; padding: 5px 15px; font-size: 0.8rem; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
+        .cat-chip { padding: 7px 14px; background: #f0f0f0; border-radius: 20px; font-size: 0.75rem; white-space: nowrap; cursor: pointer; border: 2px solid transparent; color: #666; transition: all 0.2s; }
+        .cat-chip.active { color: white; font-weight: bold; }
         
+        /* Chip-Farben im aktiven Zustand */
+        .cat-chip[data-cat="Obst & Gemüse"].active { background: var(--color-obst); }
+        .cat-chip[data-cat="Kühlregal"].active { background: var(--color-kuehl); }
+        .cat-chip[data-cat="Vorrat"].active { background: var(--color-vorrat); }
+        .cat-chip[data-cat="Backwaren"].active { background: var(--color-back); }
+        .cat-chip[data-cat="Getränke"].active { background: var(--color-getraenke); }
+        .cat-chip[data-cat="Drogerie"].active { background: var(--color-drogerie); }
+        .cat-chip[data-cat="Tiefkühl"].active { background: var(--color-tk); }
+        .cat-chip[data-cat="Sonstiges"].active { background: var(--color-sonst); }
+
+        /* Kategorie Header Design */
+        .category-header { 
+            padding: 8px 15px; font-size: 0.75rem; font-weight: 800; color: white; 
+            text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;
+        }
+        .head-obst { background: var(--color-obst); }
+        .head-kuehl { background: var(--color-kuehl); }
+        .head-vorrat { background: var(--color-vorrat); }
+        .head-back { background: var(--color-back); }
+        .head-getraenke { background: var(--color-getraenke); }
+        .head-drogerie { background: var(--color-drogerie); }
+        .head-tk { background: var(--color-tk); }
+        .head-sonst { background: var(--color-sonst); }
+        .head-done { background: #ccc; }
+
         ul { list-style: none; padding: 0; margin: 0; }
-        li { display: flex; align-items: center; padding: 14px 15px; border-bottom: 1px solid #f9f9f9; background: white; }
-        .item-text { flex: 1; cursor: pointer; font-size: 1.05rem; }
-        .checked { opacity: 0.4; background: #fafafa; }
+        li { 
+            display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f1f1f1; 
+            background: white; border-left: 5px solid transparent;
+        }
+        
+        /* Akzentstreifen links */
+        li.cat-obst { border-left-color: var(--color-obst); }
+        li.cat-kuehl { border-left-color: var(--color-kuehl); }
+        li.cat-vorrat { border-left-color: var(--color-vorrat); }
+        li.cat-back { border-left-color: var(--color-back); }
+        li.cat-getraenke { border-left-color: var(--color-getraenke); }
+        li.cat-drogerie { border-left-color: var(--color-drogerie); }
+        li.cat-tk { border-left-color: var(--color-tk); }
+        li.cat-sonst { border-left-color: var(--color-sonst); }
+
+        .item-text { flex: 1; cursor: pointer; font-size: 1.1rem; color: #333; }
+        .checked { opacity: 0.4; background: #f9f9f9; border-left-color: #ccc !important; }
         .checked .item-text { text-decoration: line-through; }
         
-        .delete-btn { color: var(--danger); background: none; border: none; font-size: 1.2rem; padding: 0 10px; cursor: pointer; }
-        .status-msg { padding: 40px; text-align: center; color: #999; }
+        .delete-btn { color: #ccc; background: none; border: none; font-size: 1.2rem; padding: 0 5px; cursor: pointer; transition: color 0.2s; }
+        .delete-btn:hover { color: var(--danger); }
+        .status-msg { padding: 50px 20px; text-align: center; color: #aaa; font-style: italic; }
     </style>
 </head>
 <body>
     <div id="app-container">
         <header>
-            <h1>🛒 Familien Liste</h1>
+            <h1>🛒 FAMILIEN LISTE</h1>
             <button id="clear-btn">Erledigte löschen 🧹</button>
         </header>
         
@@ -76,21 +122,18 @@
         const db = getFirestore(app);
         const colRef = collection(db, "shoppingList");
 
-        // MASSIV ERWEITERTE WORTE-DATENBANK
         const categories = {
-            "Obst & Gemüse": ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel", "orange", "zitrone", "paprika", "lauch", "brokkoli", "möhre", "karotte", "avocado", "weintrauben", "kiwi", "birne", "knoblauch", "ingwer", "pilze", "kohl", "spinat", "ananas", "melone"],
-            "Kühlregal": ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne", "milchschnitte", "hummus", "hefe", "frischkäse", "mozzarella", "fleisch", "hähnchen", "hackfleisch", "fisch", "tofu", "vegan"],
-            "Vorrat": ["nudeln", "reis", "mehl", "zucker", "kaffee", "tee", "öl", "konserve", "gewürz", "haferflocken", "chips", "schokolade", "kekse", "spaghetti", "tomatensauce", "backpulver", "honig", "nutella", "müsli", "salz", "pfeffer", "essig"],
-            "Backwaren": ["brot", "brötchen", "toast", "kuchen", "brezel", "baguette", "croissant", "pizzateig"],
-            "Getränke": ["wasser", "saft", "bier", "wein", "cola", "limo", "sprudel", "schorle", "energy", "eistee", "milch", "mineralwasser"],
-            "Drogerie": ["klopapier", "seife", "shampoo", "zahnpasta", "windeln", "putzmittel", "deo", "duschgel", "taschentücher", "waschmittel", "spülmittel", "küchenrolle", "zahnbürste"],
-            "Tiefkühl": ["pizza", "pommes", "eis", "fischstäbchen", "fertiggericht", "tk", "beeren", "eiswürfel"],
-            "Sonstiges": []
+            "Obst & Gemüse": { class: "obst", words: ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel", "orange", "zitrone", "paprika", "lauch", "brokkoli", "möhre", "karotte", "avocado", "weintrauben", "kiwi", "birne", "knoblauch", "ingwer", "pilze", "kohl", "spinat", "ananas", "melone"] },
+            "Kühlregal": { class: "kuehl", words: ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne", "milchschnitte", "hummus", "hefe", "frischkäse", "mozzarella", "fleisch", "hähnchen", "hackfleisch", "fisch", "tofu", "vegan"] },
+            "Vorrat": { class: "vorrat", words: ["nudeln", "preis", "mehl", "zucker", "kaffee", "tee", "öl", "konserve", "gewürz", "haferflocken", "chips", "schokolade", "kekse", "spaghetti", "tomatensauce", "backpulver", "honig", "nutella", "müsli", "salz", "pfeffer", "essig"] },
+            "Backwaren": { class: "back", words: ["brot", "brötchen", "toast", "kuchen", "brezel", "baguette", "croissant", "pizzateig"] },
+            "Getränke": { class: "getraenke", words: ["wasser", "saft", "bier", "wein", "cola", "limo", "sprudel", "schorle", "energy", "eistee", "mineralwasser"] },
+            "Drogerie": { class: "drogerie", words: ["klopapier", "seife", "shampoo", "zahnpasta", "windeln", "putzmittel", "deo", "duschgel", "taschentücher", "waschmittel", "spülmittel", "küchenrolle", "zahnbürste"] },
+            "Tiefkühl": { class: "tk", words: ["pizza", "pommes", "eis", "fischstäbchen", "fertiggericht", "tk", "eiswürfel"] },
+            "Sonstiges": { class: "sonst", words: [] }
         };
 
-        const emojiMap = {
-            'milch': '🥛', 'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'apfel': '🍎', 'orange': '🍊', 'banane': '🍌', 'gemüse': '🥦', 'bier': '🍺', 'pizza': '🍕', 'klopapier': '🧻', 'kaffee': '☕', 'fleisch': '🥩', 'fisch': '🐟'
-        };
+        const emojiMap = { 'milch': '🥛', 'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'apfel': '🍎', 'orange': '🍊', 'banane': '🍌', 'gemüse': '🥦', 'bier': '🍺', 'pizza': '🍕', 'klopapier': '🧻' };
 
         let selectedCategory = "Sonstiges";
         const input = document.getElementById('item-input');
@@ -98,10 +141,12 @@
         const listContent = document.getElementById('list-content');
         const catChipsContainer = document.getElementById('cat-chips');
 
+        // Chips mit Daten-Attribut für CSS Farben
         Object.keys(categories).forEach(cat => {
             const chip = document.createElement('div');
             chip.className = `cat-chip ${cat === "Sonstiges" ? "active" : ""}`;
             chip.innerText = cat;
+            chip.setAttribute('data-cat', cat);
             chip.onclick = () => {
                 document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
                 chip.classList.add('active');
@@ -113,11 +158,11 @@
         input.oninput = () => {
             const val = input.value.toLowerCase();
             if (val === "") return;
-            for (const [cat, keywords] of Object.entries(categories)) {
-                if (keywords.some(k => val.includes(k))) {
+            for (const [cat, data] of Object.entries(categories)) {
+                if (data.words.some(k => val.includes(k))) {
                     selectedCategory = cat;
                     document.querySelectorAll('.cat-chip').forEach(c => {
-                        c.classList.toggle('active', c.innerText === cat);
+                        c.classList.toggle('active', c.getAttribute('data-cat') === cat);
                     });
                     break;
                 }
@@ -129,7 +174,7 @@
         onSnapshot(q, (snapshot) => {
             listContent.innerHTML = '';
             if (snapshot.empty) {
-                listContent.innerHTML = '<div class="status-msg">Alles erledigt! ✨</div>';
+                listContent.innerHTML = '<div class="status-msg">Die Liste ist leer. <br>Zeit für einen Großeinkauf! 🛒</div>';
                 return;
             }
 
@@ -138,13 +183,13 @@
 
             snapshot.docs.forEach(docSnap => {
                 const item = docSnap.data();
-                const id = docSnap.id;
                 const cat = item.category || "Sonstiges";
+                const catClass = categories[cat] ? categories[cat].class : "sonst";
 
                 if (cat !== currentCat && !item.checked) {
                     currentCat = cat;
                     const head = document.createElement('div');
-                    head.className = 'category-header';
+                    head.className = `category-header head-${catClass}`;
                     head.innerText = cat;
                     listContent.appendChild(head);
                     currentUl = document.createElement('ul');
@@ -152,7 +197,7 @@
                 } else if (item.checked && currentCat !== "Erledigt") {
                     currentCat = "Erledigt";
                     const head = document.createElement('div');
-                    head.className = 'category-header';
+                    head.className = 'category-header head-done';
                     head.innerText = "Abgehakt ✅";
                     listContent.appendChild(head);
                     currentUl = document.createElement('ul');
@@ -160,11 +205,12 @@
                 }
 
                 const li = document.createElement('li');
+                li.className = `cat-${catClass}`;
                 if(item.checked) li.classList.add('checked');
                 li.innerHTML = `<span class="item-text">${item.text}</span><button class="delete-btn">✕</button>`;
                 
-                li.querySelector('.item-text').onclick = () => updateDoc(doc(db, "shoppingList", id), { checked: !item.checked });
-                li.querySelector('.delete-btn').onclick = () => deleteDoc(doc(db, "shoppingList", id));
+                li.querySelector('.item-text').onclick = () => updateDoc(doc(db, "shoppingList", docSnap.id), { checked: !item.checked });
+                li.querySelector('.delete-btn').onclick = () => deleteDoc(doc(db, "shoppingList", docSnap.id));
                 currentUl.appendChild(li);
             });
         });
@@ -172,28 +218,15 @@
         async function addItem() {
             const rawText = input.value.trim();
             if (rawText === "") return;
-            
             let icon = "";
-            const lowerText = rawText.toLowerCase();
             for (const [key, value] of Object.entries(emojiMap)) {
-                if (lowerText.includes(key)) { icon = value + " "; break; }
+                if (rawText.toLowerCase().includes(key)) { icon = value + " "; break; }
             }
-
-            const finalText = icon + rawText;
-            const categoryToSave = selectedCategory;
-            
+            await addDoc(colRef, { text: icon + rawText, checked: false, category: selectedCategory, createdAt: Date.now() });
             input.value = '';
-            await addDoc(colRef, { 
-                text: finalText, 
-                checked: false, 
-                category: categoryToSave,
-                createdAt: Date.now() 
-            });
-            // Reset Chip
+            // Reset Chips
             selectedCategory = "Sonstiges";
-            document.querySelectorAll('.cat-chip').forEach(c => {
-                c.classList.toggle('active', c.innerText === "Sonstiges");
-            });
+            document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.getAttribute('data-cat') === "Sonstiges"));
         }
 
         document.getElementById('clear-btn').onclick = async () => {
