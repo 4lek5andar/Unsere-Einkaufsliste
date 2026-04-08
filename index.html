@@ -25,7 +25,6 @@
         .header-btns { display: flex; justify-content: center; gap: 10px; margin-top: 8px; }
         .action-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; cursor: pointer; text-transform: uppercase; }
 
-        /* Import Bereich */
         #import-area { display: none; padding: 15px; background: #eee; border-bottom: 2px solid #ddd; }
         #import-textarea { width: 100%; height: 120px; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-family: inherit; box-sizing: border-box; resize: none; }
         #import-confirm-btn { background: var(--primary); color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; margin-top: 8px; font-weight: bold; cursor: pointer; }
@@ -72,9 +71,19 @@
         li.cat-tk { border-left-color: var(--color-tk); }
         li.cat-sonst { border-left-color: var(--color-sonst); }
 
-        .item-text { flex: 1; cursor: pointer; font-size: 1.1rem; color: #333; }
+        .item-text-wrapper { flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer; overflow: hidden; }
+        
+        /* Das Mengen-Badge */
+        .amount-badge { 
+            background: #f0f0f0; color: #666; font-size: 0.75rem; font-weight: bold; 
+            padding: 2px 8px; border-radius: 6px; white-space: nowrap; border: 1px solid #ddd;
+        }
+
+        .item-name { font-size: 1.1rem; color: #333; }
         .checked { opacity: 0.4; background: #f9f9f9; border-left-color: #ccc !important; }
-        .checked .item-text { text-decoration: line-through; }
+        .checked .item-name { text-decoration: line-through; }
+        .checked .amount-badge { background: #eee; border-color: #eee; }
+
         .delete-btn { color: #ccc; background: none; border: none; font-size: 1.2rem; padding: 0 5px; cursor: pointer; }
         .status-msg { padding: 50px 20px; text-align: center; color: #aaa; }
     </style>
@@ -126,139 +135,4 @@
 
         const categories = {
             "Obst & Gemüse": { class: "obst", words: ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel", "orange", "zitrone", "paprika", "lauch", "brokkoli", "möhre", "karotte", "avocado", "rucola", "weintrauben", "kiwi", "birne", "knoblauch", "ingwer", "pilze", "kohl", "spinat", "ananas", "melone"] },
-            "Kühlregal": { class: "kuehl", words: ["milch", "lachs", "creme fraiche", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne", "milchschnitte", "hummus", "hefe", "frischkäse", "mozzarella", "fleisch", "hähnchen", "hackfleisch", "fisch", "tofu", "vegan"] },
-            "Vorrat": { class: "vorrat", words: ["nudeln", "preis", "mehl", "zucker", "kaffee", "tee", "öl", "konserve", "gewürz", "haferflocken", "chips", "schokolade", "kekse", "spaghetti", "tomatensauce", "backpulver", "honig", "nutella", "müsli", "salz", "pfeffer", "essig"] },
-            "Backwaren": { class: "back", words: ["brot", "brötchen", "toast", "kuchen", "brezel", "baguette", "croissant", "pizzateig"] },
-            "Getränke": { class: "getraenke", words: ["wasser", "saft", "bier", "wein", "coka-cola", "limo", "sprudel", "schorle", "energy", "eistee", "mineralwasser"] },
-            "Drogerie": { class: "drogerie", words: ["klopapier", "seife", "shampoo", "zahnpasta", "windeln", "putzmittel", "deo", "duschgel", "taschentücher", "waschmittel", "spülmittel", "küchenrolle", "zahnbürste"] },
-            "Tiefkühl": { class: "tk", words: ["pizza", "pommes", "eis", "fischstäbchen", "fertiggericht", "tk", "eiswürfel"] },
-            "Sonstiges": { class: "sonst", words: [] }
-        };
-
-        const emojiMap = { 'milch': '🥛', 'brot': '🍞', 'eier': '🥚', 'käse': '🧀', 'apfel': '🍎', 'orange': '🍊', 'banane': '🍌', 'gemüse': '🥦', 'bier': '🍺', 'pizza': '🍕', 'klopapier': '🧻' };
-
-        let selectedCategory = "Sonstiges";
-        const input = document.getElementById('item-input');
-        const addBtn = document.getElementById('add-btn');
-        const listContent = document.getElementById('list-content');
-        const catChipsContainer = document.getElementById('cat-chips');
-        const importArea = document.getElementById('import-area');
-        const importTextarea = document.getElementById('import-textarea');
-
-        // Toggle Import Area
-        document.getElementById('toggle-import').onclick = () => {
-            importArea.style.display = importArea.style.display === 'block' ? 'none' : 'block';
-        };
-
-        // UI Chips
-        Object.keys(categories).forEach(cat => {
-            const chip = document.createElement('div');
-            chip.className = `cat-chip ${cat === "Sonstiges" ? "active" : ""}`;
-            chip.innerText = cat;
-            chip.setAttribute('data-cat', cat);
-            chip.onclick = () => {
-                document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-                chip.classList.add('active');
-                selectedCategory = cat;
-            };
-            catChipsContainer.appendChild(chip);
-        });
-
-        // Helper: Kategorie & Emoji für Text finden
-        function processText(text) {
-            let cat = "Sonstiges";
-            let emoji = "";
-            const lowerText = text.toLowerCase();
-            
-            for (const [cName, data] of Object.entries(categories)) {
-                if (data.words.some(k => lowerText.includes(k))) { cat = cName; break; }
-            }
-            for (const [key, val] of Object.entries(emojiMap)) {
-                if (lowerText.includes(key)) { emoji = val + " "; break; }
-            }
-            return { finalText: emoji + text, category: cat };
-        }
-
-        // Auto-Kategorie beim Tippen
-        input.oninput = () => {
-            const { category } = processText(input.value);
-            selectedCategory = category;
-            document.querySelectorAll('.cat-chip').forEach(c => {
-                c.classList.toggle('active', c.getAttribute('data-cat') === category);
-            });
-        };
-
-        // Einzelnes Item hinzufügen
-        async function addItem() {
-            const rawText = input.value.trim();
-            if (!rawText) return;
-            const { finalText } = processText(rawText);
-            await addDoc(colRef, { text: finalText, checked: false, category: selectedCategory, createdAt: Date.now() });
-            input.value = '';
-            selectedCategory = "Sonstiges";
-            document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.getAttribute('data-cat') === "Sonstiges"));
-        }
-
-        // MASSEN-IMPORT FUNKTION
-        document.getElementById('import-confirm-btn').onclick = async () => {
-            const lines = importTextarea.value.split('\n').filter(l => l.trim() !== "");
-            if (lines.length === 0) return;
-            
-            for (const line of lines) {
-                const { finalText, category } = processText(line.trim());
-                await addDoc(colRef, { text: finalText, checked: false, category: category, createdAt: Date.now() });
-            }
-            
-            importTextarea.value = '';
-            importArea.style.display = 'none';
-        };
-
-        // Firestore Listener & Rendering
-        const q = query(colRef, orderBy("checked", "asc"), orderBy("category", "asc"), orderBy("createdAt", "desc"));
-        onSnapshot(q, (snapshot) => {
-            listContent.innerHTML = '';
-            if (snapshot.empty) { listContent.innerHTML = '<div class="status-msg">Liste leer.</div>'; return; }
-            let currentCat = "";
-            let currentUl = null;
-            snapshot.docs.forEach(docSnap => {
-                const item = docSnap.data();
-                const cat = item.category || "Sonstiges";
-                const catClass = categories[cat] ? categories[cat].class : "sonst";
-                if (cat !== currentCat && !item.checked) {
-                    currentCat = cat;
-                    const head = document.createElement('div');
-                    head.className = `category-header head-${catClass}`;
-                    head.innerText = cat;
-                    listContent.appendChild(head);
-                    currentUl = document.createElement('ul');
-                    listContent.appendChild(currentUl);
-                } else if (item.checked && currentCat !== "Erledigt") {
-                    currentCat = "Erledigt";
-                    const head = document.createElement('div');
-                    head.className = 'category-header head-done';
-                    head.innerText = "Abgehakt ✅";
-                    listContent.appendChild(head);
-                    currentUl = document.createElement('ul');
-                    listContent.appendChild(currentUl);
-                }
-                const li = document.createElement('li');
-                li.className = `cat-${catClass} ${item.checked ? 'checked' : ''}`;
-                li.innerHTML = `<span class="item-text">${item.text}</span><button class="delete-btn">✕</button>`;
-                li.querySelector('.item-text').onclick = () => updateDoc(doc(db, "shoppingList", docSnap.id), { checked: !item.checked });
-                li.querySelector('.delete-btn').onclick = () => deleteDoc(doc(db, "shoppingList", docSnap.id));
-                currentUl.appendChild(li);
-            });
-        });
-
-        document.getElementById('clear-btn').onclick = async () => {
-            if (!confirm("Abgehakte löschen?")) return;
-            const qChecked = query(colRef, where("checked", "==", true));
-            const snap = await getDocs(qChecked);
-            snap.forEach(d => deleteDoc(doc(db, "shoppingList", d.id)));
-        };
-
-        addBtn.onclick = addItem;
-        input.onkeypress = (e) => { if(e.key === 'Enter') addItem(); };
-    </script>
-</body>
-</html>
+            "Kühlregal": { class: "kuehl", words: ["milch", "lachs", "creme fraiche", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne", "milchschnitte", "hummus", "hefe", "frischkäse", "mozz
