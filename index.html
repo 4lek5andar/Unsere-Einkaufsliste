@@ -116,13 +116,11 @@
             "Sonstiges": { class: "sonst", words: [] }
         };
 
-
         let selectedCategory = "Sonstiges";
         const input = document.getElementById('item-input');
         const listContent = document.getElementById('list-content');
         const catChipsContainer = document.getElementById('cat-chips');
 
-        // Initialisiere Chips
         Object.keys(categories).forEach(cat => {
             const chip = document.createElement('div');
             chip.className = `cat-chip ${cat === "Sonstiges" ? "active" : ""}`;
@@ -147,28 +145,23 @@
             return { amount: null, name: text };
         }
 
-        function getInfo(text) {
-            let cat = "Sonstiges";
-            let emoji = "";
+        function getCategoryByText(text) {
             const lt = text.toLowerCase();
             for (const [cName, data] of Object.entries(categories)) {
-                if (data.words.some(w => lt.includes(w))) { cat = cName; break; }
+                if (data.words.some(w => lt.includes(w))) return cName;
             }
-            for (const [key, val] of Object.entries(emojiMap)) {
-                if (lt.includes(key)) { emoji = val + " "; break; }
-            }
-            return { emoji, cat };
+            return "Sonstiges";
         }
 
         input.oninput = () => {
-            const info = getInfo(input.value);
-            selectedCategory = info.cat;
-            document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.getAttribute('data-cat') === info.cat));
+            const cat = getCategoryByText(input.value);
+            selectedCategory = cat;
+            document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.getAttribute('data-cat') === cat));
         };
 
         async function save(txt, cat) {
-            const info = getInfo(txt);
-            await addDoc(colRef, { text: info.emoji + txt, checked: false, category: cat || info.cat, createdAt: Date.now() });
+            const finalCat = cat || getCategoryByText(txt);
+            await addDoc(colRef, { text: txt, checked: false, category: finalCat, createdAt: Date.now() });
         }
 
         document.getElementById('add-btn').onclick = async () => {
@@ -202,7 +195,7 @@
                 if ((cat !== cur && !item.checked) || (item.checked && cur !== "Done")) {
                     cur = item.checked ? "Done" : cat;
                     const h = document.createElement('div');
-                    h.className = `category-header ${item.checked ? 'head-done' : 'head-'+categories[cat].class}`;
+                    h.className = `category-header ${item.checked ? 'head-done' : 'head-'+categories[cat]?.class}`;
                     h.innerText = item.checked ? "Erledigt ✅" : cat;
                     listContent.appendChild(h);
                     ul = document.createElement('ul');
