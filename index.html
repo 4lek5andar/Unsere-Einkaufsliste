@@ -18,21 +18,14 @@
         }
         body { font-family: -apple-system, sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
         #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; }
-        
-        header { background: var(--primary); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h1 { margin: 0; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        
-        .input-area { padding: 15px; border-bottom: 1px solid #eee; background: white; }
-        .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        header { background: var(--primary); color: white; padding: 15px; text-align: center; }
+        .input-area { padding: 15px; border-bottom: 1px solid #eee; }
+        .input-row { display: flex; gap: 10px; margin-bottom: 10px; }
         input { flex: 1; padding: 12px; border: 2px solid #f0f0f0; border-radius: 10px; font-size: 16px; outline: none; }
         button#add-btn { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 24px; cursor: pointer; }
-        
-        .cat-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
-        .cat-chips::-webkit-scrollbar { display: none; }
-        .chip { padding: 7px 14px; background: #eee; border-radius: 15px; font-size: 0.75rem; white-space: nowrap; cursor: pointer; color: #666; font-weight: bold; border: 2px solid transparent; }
+        .cat-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
+        .chip { padding: 6px 12px; background: #eee; border-radius: 15px; font-size: 0.7rem; white-space: nowrap; cursor: pointer; color: #666; font-weight: bold; }
         .chip.active { color: white; }
-        
-        /* Chip Farben */
         .chip[data-cat="Obst & Gemüse"].active { background: var(--color-obst); }
         .chip[data-cat="Kühlregal"].active { background: var(--color-kuehl); }
         .chip[data-cat="Vorrat"].active { background: var(--color-vorrat); }
@@ -41,19 +34,9 @@
         .chip[data-cat="Drogerie"].active { background: var(--color-drogerie); }
         .chip[data-cat="Tiefkühl"].active { background: var(--color-tk); }
         .chip[data-cat="Sonstiges"].active { background: var(--color-sonst); }
-
-        .cat-header { padding: 8px 15px; font-size: 0.7rem; font-weight: 800; color: white; text-transform: uppercase; margin-top: 5px; }
-        .head-obst { background: var(--color-obst); }
-        .head-kuehl { background: var(--color-kuehl); }
-        .head-vorrat { background: var(--color-vorrat); }
-        .head-back { background: var(--color-back); }
-        .head-getraenke { background: var(--color-getraenke); }
-        .head-drogerie { background: var(--color-drogerie); }
-        .head-tk { background: var(--color-tk); }
-        .head-sonst { background: var(--color-sonst); }
-
+        .cat-header { padding: 8px 15px; font-size: 0.7rem; font-weight: 800; color: white; text-transform: uppercase; }
         ul { list-style: none; padding: 0; margin: 0; }
-        li { display: flex; justify-content: space-between; align-items: center; padding: 14px 15px; border-bottom: 1px solid #f9f9f9; border-left: 5px solid transparent; }
+        li { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f9f9f9; border-left: 5px solid transparent; }
         li.cat-obst { border-left-color: var(--color-obst); }
         li.cat-kuehl { border-left-color: var(--color-kuehl); }
         li.cat-vorrat { border-left-color: var(--color-vorrat); }
@@ -62,16 +45,12 @@
         li.cat-drogerie { border-left-color: var(--color-drogerie); }
         li.cat-tk { border-left-color: var(--color-tk); }
         li.cat-sonst { border-left-color: var(--color-sonst); }
-        
-        .delete-btn { color: #ccc; background: none; border: none; font-size: 1.2rem; cursor: pointer; }
-        .clear-area { padding: 10px; text-align: center; }
-        .clear-btn { background: none; border: 1px solid #ddd; color: #999; padding: 5px 15px; border-radius: 15px; font-size: 0.7rem; cursor: pointer; }
+        .delete-btn { color: #ccc; background: none; border: none; font-size: 1.2rem; }
     </style>
 </head>
 <body>
     <div id="app-container">
-        <header><h1><span>🛒</span> FAMILIEN LISTE</h1></header>
-
+        <header><h1>🛒 FAMILIEN LISTE</h1></header>
         <div class="input-area">
             <div class="input-row">
                 <input type="text" id="item-input" placeholder="Was fehlt uns?" autocomplete="off">
@@ -79,12 +58,7 @@
             </div>
             <div class="cat-chips" id="cat-chips"></div>
         </div>
-
         <div id="list-content"></div>
-        
-        <div class="clear-area">
-            <button class="clear-btn" id="clear-btn">Liste leeren 🧹</button>
-        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -105,21 +79,19 @@
         const colRef = db.collection("shoppingList");
 
         const categories = {
-            "Obst & Gemüse": { class: "obst", words: ["apfel", "banane", "gurke", "tomate", "salat", "kartoffel", "möhre", "zwiebel", "paprika", "beeren", "obst", "gemüse"] },
-            "Kühlregal": { class: "kuehl", words: ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "fleisch", "sahne"] },
-            "Vorrat": { class: "vorrat", words: ["nudeln", "mehl", "zucker", "kaffee", "tee", "öl", "reis", "chips", "schokolade", "müsli"] },
-            "Backwaren": { class: "back", words: ["brot", "brötchen", "toast", "kuchen", "baguette"] },
-            "Getränke": { class: "getraenke", words: ["wasser", "saft", "bier", "wein", "cola", "limo"] },
-            "Drogerie": { class: "drogerie", words: ["klopapier", "seife", "shampoo", "zahnpasta", "spülmittel", "deo"] },
+            "Obst & Gemüse": { class: "obst", words: ["apfel", "banane", "gurke", "tomate", "salat", "kartoffel", "möhre", "obst", "gemüse"] },
+            "Kühlregal": { class: "kuehl", words: ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "fleisch"] },
+            "Vorrat": { class: "vorrat", words: ["nudeln", "mehl", "zucker", "kaffee", "öl", "reis", "chips"] },
+            "Backwaren": { class: "back", words: ["brot", "brötchen", "toast", "kuchen"] },
+            "Getränke": { class: "getraenke", words: ["wasser", "saft", "bier", "wein", "cola"] },
+            "Drogerie": { class: "drogerie", words: ["klopapier", "seife", "shampoo", "deo"] },
             "Tiefkühl": { class: "tk", words: ["pizza", "pommes", "eis", "tk"] },
             "Sonstiges": { class: "sonst", words: [] }
         };
 
         let selectedCategory = "Sonstiges";
         const input = document.getElementById('item-input');
-        const chipContainer = document.getElementById('cat-chips');
 
-        // Chips bauen
         Object.keys(categories).forEach(cat => {
             const span = document.createElement('span');
             span.className = 'chip' + (cat === "Sonstiges" ? ' active' : '');
@@ -130,10 +102,9 @@
                 document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
                 span.classList.add('active');
             };
-            chipContainer.appendChild(span);
+            document.getElementById('cat-chips').appendChild(span);
         });
 
-        // Automatik bei Texteingabe
         input.oninput = () => {
             const val = input.value.toLowerCase();
             for (const [name, data] of Object.entries(categories)) {
@@ -150,48 +121,48 @@
         document.getElementById('add-btn').onclick = async () => {
             const val = input.value.trim();
             if(!val) return;
-            await colRef.add({
-                text: val,
-                category: selectedCategory,
-                createdAt: Date.now()
-            });
-            input.value = '';
+            try {
+                // Hinzufügen ohne speziellen Index-Zwang
+                await colRef.add({
+                    text: val,
+                    category: selectedCategory,
+                    createdAt: Date.now()
+                });
+                input.value = '';
+            } catch (e) {
+                alert("Fehler: " + e.message);
+            }
         };
 
-        colRef.orderBy("category", "asc").orderBy("createdAt", "desc").onSnapshot(snap => {
+        // Einfache Abfrage, die immer funktioniert
+        colRef.onSnapshot(snap => {
             const list = document.getElementById('list-content');
             list.innerHTML = '';
+            // Sortierung machen wir jetzt einfach im Browser, um Firebase-Fehler zu vermeiden
+            const docs = [];
+            snap.forEach(d => docs.push({id: d.id, ...d.data()}));
+            
+            // Erst nach Kategorie, dann nach Zeit sortieren
+            docs.sort((a, b) => a.category.localeCompare(b.category) || b.createdAt - a.createdAt);
+
             let lastCat = "";
-
-            snap.forEach(doc => {
-                const item = doc.data();
-                const cat = item.category || "Sonstiges";
-
-                if (cat !== lastCat) {
+            docs.forEach(item => {
+                if (item.category !== lastCat) {
                     const h = document.createElement('div');
-                    h.className = `cat-header head-${categories[cat]?.class || 'sonst'}`;
-                    h.innerText = cat;
+                    h.className = `cat-header head-${categories[item.category]?.class || 'sonst'}`;
+                    h.style.background = `var(--color-${categories[item.category]?.class || 'sonst'})`;
+                    h.innerText = item.category;
                     list.appendChild(h);
-                    lastCat = cat;
+                    lastCat = item.category;
                 }
-
                 const li = document.createElement('li');
-                li.className = `cat-${categories[cat]?.class || 'sonst'}`;
-                li.innerHTML = `
-                    <span>${item.text}</span>
-                    <button class="delete-btn" onclick="deleteItem('${doc.id}')">✕</button>
-                `;
+                li.className = `cat-${categories[item.category]?.class || 'sonst'}`;
+                li.innerHTML = `<span>${item.text}</span><button class="delete-btn" onclick="deleteItem('${item.id}')">✕</button>`;
                 list.appendChild(li);
             });
         });
 
         window.deleteItem = (id) => colRef.doc(id).delete();
-
-        document.getElementById('clear-btn').onclick = async () => {
-            if(!confirm("Wirklich alles löschen?")) return;
-            const snap = await colRef.get();
-            snap.forEach(d => d.ref.delete());
-        };
     </script>
 </body>
 </html>
