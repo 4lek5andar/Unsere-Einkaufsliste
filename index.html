@@ -67,13 +67,24 @@
 </head>
 <body>
     <div id="app-container">
-        <header>
-            <h1>🛒 FAMILIEN LISTE</h1>
-            <div class="header-btns">
-                <button class="action-btn" id="toggle-import">Import 📋</button>
-                <button class="action-btn" id="clear-btn">Aufräumen 🧹</button>
-            </div>
-        </header>
+        header { 
+    background: var(--primary); 
+    color: white; 
+    padding: 15px; 
+    text-align: center; 
+    position: sticky; 
+    top: 0; 
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+h1 { 
+    margin: 0; 
+    font-size: 1.4rem; /* Etwas größer für bessere Lesbarkeit */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
         <div id="import-area">
             <textarea id="import-textarea" placeholder="Liste hier einfügen..."></textarea>
             <button id="import-confirm-btn">Hinzufügen 🚀</button>
