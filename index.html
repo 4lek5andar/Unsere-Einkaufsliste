@@ -10,47 +10,87 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <style>
-        :root { --primary: #4CAF50; --bg: #f4f7f6; }
-        body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
-        #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; }
-        header { background: var(--primary); color: white; padding: 15px; text-align: center; }
-        .input-area { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .input-row { display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        button { padding: 10px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }
-        #list-content { padding: 10px; }
-        .item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center; }
-        .delete-btn { color: #ff5252; background: none; font-weight: bold; }
-        .error-box { background: #ffeded; color: #d32f2f; padding: 15px; margin: 10px; border-radius: 8px; display: none; }
+        :root { 
+            --primary: #4CAF50; --bg: #f4f7f6; 
+            --color-obst: #4caf50; --color-kuehl: #2196f3; --color-vorrat: #ff9800;
+            --color-back: #795548; --color-getraenke: #00bcd4; --color-drogerie: #9c27b0;
+            --color-tk: #03a9f4; --color-sonst: #607d8b;
+        }
+        body { font-family: -apple-system, sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
+        #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        header { background: var(--primary); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { margin: 0; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        
+        .input-area { padding: 15px; border-bottom: 1px solid #eee; background: white; }
+        .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        input { flex: 1; padding: 12px; border: 2px solid #f0f0f0; border-radius: 10px; font-size: 16px; outline: none; }
+        button#add-btn { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 24px; cursor: pointer; }
+        
+        .cat-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .cat-chips::-webkit-scrollbar { display: none; }
+        .chip { padding: 7px 14px; background: #eee; border-radius: 15px; font-size: 0.75rem; white-space: nowrap; cursor: pointer; color: #666; font-weight: bold; border: 2px solid transparent; }
+        .chip.active { color: white; }
+        
+        /* Chip Farben */
+        .chip[data-cat="Obst & Gemüse"].active { background: var(--color-obst); }
+        .chip[data-cat="Kühlregal"].active { background: var(--color-kuehl); }
+        .chip[data-cat="Vorrat"].active { background: var(--color-vorrat); }
+        .chip[data-cat="Backwaren"].active { background: var(--color-back); }
+        .chip[data-cat="Getränke"].active { background: var(--color-getraenke); }
+        .chip[data-cat="Drogerie"].active { background: var(--color-drogerie); }
+        .chip[data-cat="Tiefkühl"].active { background: var(--color-tk); }
+        .chip[data-cat="Sonstiges"].active { background: var(--color-sonst); }
+
+        .cat-header { padding: 8px 15px; font-size: 0.7rem; font-weight: 800; color: white; text-transform: uppercase; margin-top: 5px; }
+        .head-obst { background: var(--color-obst); }
+        .head-kuehl { background: var(--color-kuehl); }
+        .head-vorrat { background: var(--color-vorrat); }
+        .head-back { background: var(--color-back); }
+        .head-getraenke { background: var(--color-getraenke); }
+        .head-drogerie { background: var(--color-drogerie); }
+        .head-tk { background: var(--color-tk); }
+        .head-sonst { background: var(--color-sonst); }
+
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { display: flex; justify-content: space-between; align-items: center; padding: 14px 15px; border-bottom: 1px solid #f9f9f9; border-left: 5px solid transparent; }
+        li.cat-obst { border-left-color: var(--color-obst); }
+        li.cat-kuehl { border-left-color: var(--color-kuehl); }
+        li.cat-vorrat { border-left-color: var(--color-vorrat); }
+        li.cat-back { border-left-color: var(--color-back); }
+        li.cat-getraenke { border-left-color: var(--color-getraenke); }
+        li.cat-drogerie { border-left-color: var(--color-drogerie); }
+        li.cat-tk { border-left-color: var(--color-tk); }
+        li.cat-sonst { border-left-color: var(--color-sonst); }
+        
+        .delete-btn { color: #ccc; background: none; border: none; font-size: 1.2rem; cursor: pointer; }
+        .clear-area { padding: 10px; text-align: center; }
+        .clear-btn { background: none; border: 1px solid #ddd; color: #999; padding: 5px 15px; border-radius: 15px; font-size: 0.7rem; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="app-container">
-        <header><h1>🛒 FAMILIEN LISTE</h1></header>
-        
-        <div id="error-display" class="error-box"></div>
+        <header><h1><span>🛒</span> FAMILIEN LISTE</h1></header>
 
         <div class="input-area">
             <div class="input-row">
-                <input type="text" id="item-input" placeholder="Was fehlt uns?">
-                <button id="add-btn">Hinzufügen</button>
+                <input type="text" id="item-input" placeholder="Was fehlt uns?" autocomplete="off">
+                <button id="add-btn">+</button>
             </div>
+            <div class="cat-chips" id="cat-chips"></div>
         </div>
 
-        <div id="list-content">Lade Daten...</div>
+        <div id="list-content"></div>
+        
+        <div class="clear-area">
+            <button class="clear-btn" id="clear-btn">Liste leeren 🧹</button>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Sicherheits-Check: Falls Firebase nicht lädt
-        window.onerror = function(msg) {
-            const errDiv = document.getElementById('error-display');
-            errDiv.style.display = 'block';
-            errDiv.innerHTML = "Fehler beim Laden: " + msg;
-        };
-
         const firebaseConfig = {
             apiKey: "AIzaSyAHXdu0nscpjeZ-hD4aZGctADhr8dVnpy0",
             authDomain: "familienliste-292c8.firebaseapp.com",
@@ -60,57 +100,97 @@
             appId: "1:27172030104:web:ec55b4f4b8e4c07373f2ed"
         };
 
-        // Firebase Initialisierung
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const colRef = db.collection("shoppingList");
 
+        const categories = {
+            "Obst & Gemüse": { class: "obst", words: ["apfel", "banane", "gurke", "tomate", "salat", "kartoffel", "möhre", "zwiebel", "paprika", "beeren", "obst", "gemüse"] },
+            "Kühlregal": { class: "kuehl", words: ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "fleisch", "sahne"] },
+            "Vorrat": { class: "vorrat", words: ["nudeln", "mehl", "zucker", "kaffee", "tee", "öl", "reis", "chips", "schokolade", "müsli"] },
+            "Backwaren": { class: "back", words: ["brot", "brötchen", "toast", "kuchen", "baguette"] },
+            "Getränke": { class: "getraenke", words: ["wasser", "saft", "bier", "wein", "cola", "limo"] },
+            "Drogerie": { class: "drogerie", words: ["klopapier", "seife", "shampoo", "zahnpasta", "spülmittel", "deo"] },
+            "Tiefkühl": { class: "tk", words: ["pizza", "pommes", "eis", "tk"] },
+            "Sonstiges": { class: "sonst", words: [] }
+        };
+
+        let selectedCategory = "Sonstiges";
         const input = document.getElementById('item-input');
-        const listContent = document.getElementById('list-content');
+        const chipContainer = document.getElementById('cat-chips');
 
-        // Funktion zum Speichern
-        async function save() {
-            const val = input.value.trim();
-            if(!val) return;
-            try {
-                await colRef.add({
-                    text: val,
-                    checked: false,
-                    createdAt: Date.now()
-                });
-                input.value = '';
-            } catch (e) {
-                alert("Fehler beim Speichern: " + e.message);
-            }
-        }
-
-        document.getElementById('add-btn').onclick = save;
-
-        // Echtzeit-Update der Liste
-        colRef.orderBy("createdAt", "desc").onSnapshot((snap) => {
-            listContent.innerHTML = '';
-            if(snap.empty) {
-                listContent.innerHTML = '<p style="text-align:center; color:#999;">Die Liste ist leer.</p>';
-                return;
-            }
-            snap.forEach(doc => {
-                const item = doc.data();
-                const div = document.createElement('div');
-                div.className = 'item';
-                div.innerHTML = `
-                    <span>${item.text}</span>
-                    <button class="delete-btn" onclick="deleteItem('${doc.id}')">Löschen</button>
-                `;
-                listContent.appendChild(div);
-            });
-        }, (err) => {
-            document.getElementById('error-display').style.display = 'block';
-            document.getElementById('error-display').innerText = "Firebase-Fehler: " + err.message;
+        // Chips bauen
+        Object.keys(categories).forEach(cat => {
+            const span = document.createElement('span');
+            span.className = 'chip' + (cat === "Sonstiges" ? ' active' : '');
+            span.innerText = cat;
+            span.dataset.cat = cat;
+            span.onclick = () => {
+                selectedCategory = cat;
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                span.classList.add('active');
+            };
+            chipContainer.appendChild(span);
         });
 
-        // Global machen für die Buttons
-        window.deleteItem = function(id) {
-            colRef.doc(id).delete();
+        // Automatik bei Texteingabe
+        input.oninput = () => {
+            const val = input.value.toLowerCase();
+            for (const [name, data] of Object.entries(categories)) {
+                if (data.words.some(w => val.includes(w))) {
+                    selectedCategory = name;
+                    document.querySelectorAll('.chip').forEach(c => {
+                        c.classList.toggle('active', c.dataset.cat === name);
+                    });
+                    break;
+                }
+            }
+        };
+
+        document.getElementById('add-btn').onclick = async () => {
+            const val = input.value.trim();
+            if(!val) return;
+            await colRef.add({
+                text: val,
+                category: selectedCategory,
+                createdAt: Date.now()
+            });
+            input.value = '';
+        };
+
+        colRef.orderBy("category", "asc").orderBy("createdAt", "desc").onSnapshot(snap => {
+            const list = document.getElementById('list-content');
+            list.innerHTML = '';
+            let lastCat = "";
+
+            snap.forEach(doc => {
+                const item = doc.data();
+                const cat = item.category || "Sonstiges";
+
+                if (cat !== lastCat) {
+                    const h = document.createElement('div');
+                    h.className = `cat-header head-${categories[cat]?.class || 'sonst'}`;
+                    h.innerText = cat;
+                    list.appendChild(h);
+                    lastCat = cat;
+                }
+
+                const li = document.createElement('li');
+                li.className = `cat-${categories[cat]?.class || 'sonst'}`;
+                li.innerHTML = `
+                    <span>${item.text}</span>
+                    <button class="delete-btn" onclick="deleteItem('${doc.id}')">✕</button>
+                `;
+                list.appendChild(li);
+            });
+        });
+
+        window.deleteItem = (id) => colRef.doc(id).delete();
+
+        document.getElementById('clear-btn').onclick = async () => {
+            if(!confirm("Wirklich alles löschen?")) return;
+            const snap = await colRef.get();
+            snap.forEach(d => d.ref.delete());
         };
     </script>
 </body>
