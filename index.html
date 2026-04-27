@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <title>Familien Liste</title>
+    <title>Einkaufsliste</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛒</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%234CAF50%22 rx=%2220%22/><text y=%22.85em%22 x=%225%22 font-size=%2280%22>🛒</text></svg>">
     <meta name="apple-mobile-web-app-title" content="Liste">
@@ -12,36 +12,26 @@
 
     <style>
         :root { 
-            --primary: #4CAF50; --bg: #f4f7f6; --danger: #ff5252; 
+            --primary: #4CAF50; --bg: #f4f7f6; 
             --color-obst: #4caf50; --color-kuehl: #2196f3; --color-vorrat: #ff9800;
             --color-back: #795548; --color-getraenke: #00bcd4; --color-drogerie: #9c27b0;
             --color-tk: #03a9f4; --color-sonst: #607d8b;
         }
         body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; overflow-x: hidden; }
         #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; }
-        
-        header { 
-            background: var(--primary); color: white; padding: 15px; text-align: center; 
-            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        header { background: var(--primary); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         h1 { margin: 0; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        
         .header-btns { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
         .action-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; text-transform: uppercase; font-weight: bold; }
-        
         #import-area { display: none; padding: 15px; background: #eee; border-bottom: 2px solid #ddd; }
-        #import-textarea { width: 100%; height: 120px; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-family: inherit; box-sizing: border-box; resize: none; }
+        #import-textarea { width: 100%; height: 120px; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-family: inherit; box-sizing: border-box; resize: none; width: 100%; }
         #import-confirm-btn { background: var(--primary); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; margin-top: 8px; font-weight: bold; cursor: pointer; }
-        
         .input-area { padding: 15px; background: white; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 12px; }
         .input-row { display: flex; gap: 10px; }
-        input { flex: 1; padding: 14px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; outline: none; -webkit-appearance: none; }
-        input:focus { border-color: var(--primary); }
+        input { flex: 1; padding: 14px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; outline: none; }
         button#add-btn { padding: 0 22px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 26px; cursor: pointer; }
-        
-        .category-select { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-        .category-select::-webkit-scrollbar { display: none; }
-        .cat-chip { padding: 8px 15px; background: #f0f0f0; border-radius: 20px; font-size: 0.75rem; white-space: nowrap; cursor: pointer; border: 2px solid transparent; color: #666; }
+        .category-select { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .cat-chip { padding: 8px 15px; background: #f0f0f0; border-radius: 20px; font-size: 0.75rem; white-space: nowrap; cursor: pointer; color: #666; }
         .cat-chip.active { color: white; font-weight: bold; }
         .cat-chip[data-cat="Obst & Gemüse"].active { background: var(--color-obst); }
         .cat-chip[data-cat="Kühlregal"].active { background: var(--color-kuehl); }
@@ -51,8 +41,7 @@
         .cat-chip[data-cat="Drogerie"].active { background: var(--color-drogerie); }
         .cat-chip[data-cat="Tiefkühl"].active { background: var(--color-tk); }
         .cat-chip[data-cat="Sonstiges"].active { background: var(--color-sonst); }
-        
-        .category-header { padding: 10px 15px; font-size: 0.75rem; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 1px; }
+        .category-header { padding: 10px 15px; font-size: 0.75rem; font-weight: 800; color: white; text-transform: uppercase; margin-top: 5px; }
         .head-obst { background: var(--color-obst); }
         .head-kuehl { background: var(--color-kuehl); }
         .head-vorrat { background: var(--color-vorrat); }
@@ -62,7 +51,6 @@
         .head-tk { background: var(--color-tk); }
         .head-sonst { background: var(--color-sonst); }
         .head-done { background: #ccc; }
-
         ul { list-style: none; padding: 0; margin: 0; }
         li { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f1f1f1; background: white; border-left: 6px solid transparent; }
         li.cat-obst { border-left-color: var(--color-obst); }
@@ -73,7 +61,6 @@
         li.cat-drogerie { border-left-color: var(--color-drogerie); }
         li.cat-tk { border-left-color: var(--color-tk); }
         li.cat-sonst { border-left-color: var(--color-sonst); }
-
         .item-text-wrapper { flex: 1; display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .amount-badge { background: #eee; color: #444; font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; border: 1px solid #ddd; }
         .item-name { font-size: 1.1rem; color: #333; }
@@ -92,12 +79,10 @@
                 <button class="action-btn" id="clear-btn">🧹</button>
             </div>
         </header>
-        
         <div id="import-area">
-            <textarea id="import-textarea" placeholder="Mehrere Artikel untereinander einfügen..."></textarea>
-            <button id="import-confirm-btn">Liste hinzufügen</button>
+            <textarea id="import-textarea" placeholder="Artikel untereinander einfügen..."></textarea>
+            <button id="import-confirm-btn">Hinzufügen</button>
         </div>
-
         <div class="input-area">
             <div class="input-row">
                 <input type="text" id="item-input" placeholder="Was fehlt uns?" autocomplete="off">
@@ -105,22 +90,12 @@
             </div>
             <div class="category-select" id="cat-chips"></div>
         </div>
-
-        <div id="list-content"><div class="status-msg">Lädt...</div></div>
+        <div id="list-content"></div>
     </div>
 
-    <script type="importmap">
-    {
-      "imports": {
-        "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
-        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
-      }
-    }
-    </script>
-
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, getDocs, where } from "firebase/firestore";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, getDocs, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAHXdu0nscpjeZ-hD4aZGctADhr8dVnpy0",
@@ -136,13 +111,13 @@
         const colRef = collection(db, "shoppingList");
 
         const categories = {
-            "Obst & Gemüse": { class: "obst", words: ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel", "orange", "zitrone", "paprika", "lauch", "brokkoli", "möhre", "karotte", "avocado", "rucola", "weintrauben", "kiwi", "birne", "knoblauch", "ingwer", "pilze", "kohl", "spinat", "ananas", "melone", "beere"] },
-            "Kühlregal": { class: "kuehl", words: ["milch", "lachs", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne", "milchschnitte", "hummus", "hefe", "frischkäse", "mozzarella", "fleisch", "hähnchen", "hackfleisch", "fisch", "tofu", "vegan", "salami"] },
-            "Vorrat": { class: "vorrat", words: ["nudeln", "mehl", "zucker", "kaffee", "tee", "öl", "konserve", "gewürz", "haferflocken", "chips", "schokolade", "kekse", "spaghetti", "tomatensauce", "backpulver", "honig", "nutella", "müsli", "salz", "pfeffer", "essig"] },
-            "Backwaren": { class: "back", words: ["brot", "brötchen", "toast", "kuchen", "brezel", "baguette", "croissant", "pizzateig"] },
-            "Getränke": { class: "getraenke", words: ["wasser", "saft", "bier", "wein", "cola", "limo", "sprudel", "schorle", "energy", "eistee"] },
-            "Drogerie": { class: "drogerie", words: ["klopapier", "seife", "shampoo", "zahnpasta", "windeln", "putzmittel", "deo", "duschgel", "taschentücher", "waschmittel", "spülmittel", "küchenrolle"] },
-            "Tiefkühl": { class: "tk", words: ["pizza", "pommes", "eis", "fischstäbchen", "fertiggericht", "tk"] },
+            "Obst & Gemüse": { class: "obst", words: ["apfel", "banane", "tomate", "gurke", "salat", "kartoffel", "obst", "gemüse", "beeren", "zwiebel", "paprika", "möhre", "lauch"] },
+            "Kühlregal": { class: "kuehl", words: ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "sahne", "fleisch", "fisch"] },
+            "Vorrat": { class: "vorrat", words: ["nudeln", "mehl", "zucker", "kaffee", "tee", "öl", "konserve", "chips", "schokolade", "müsli", "reis"] },
+            "Backwaren": { class: "back", words: ["brot", "brötchen", "toast", "kuchen", "brezel", "baguette"] },
+            "Getränke": { class: "getraenke", words: ["wasser", "saft", "bier", "wein", "cola", "limo", "sprudel"] },
+            "Drogerie": { class: "drogerie", words: ["klopapier", "seife", "shampoo", "zahnpasta", "windeln", "putzmittel", "deo"] },
+            "Tiefkühl": { class: "tk", words: ["pizza", "pommes", "eis", "tk"] },
             "Sonstiges": { class: "sonst", words: [] }
         };
 
@@ -164,22 +139,6 @@
             catChipsContainer.appendChild(chip);
         });
 
-        function getCategoryByText(text) {
-            const lt = text.toLowerCase();
-            for (const [cName, data] of Object.entries(categories)) {
-                if (data.words.some(w => lt.includes(w))) return cName;
-            }
-            return "Sonstiges";
-        }
-
-        input.oninput = () => {
-            const cat = getCategoryByText(input.value);
-            selectedCategory = cat;
-            document.querySelectorAll('.cat-chip').forEach(c => {
-                c.classList.toggle('active', c.getAttribute('data-cat') === cat);
-            });
-        };
-
         function extractAmount(text) {
             const regex = /^(\d+[\.,]?\d*\s*(x|g|kg|l|ml|pck|stk|bund|dose|flasche|stück)?\s+)|(\s+\d+[\.,]?\d*\s*(x|g|kg|l|ml|pck|stk|bund|dose|flasche|stück)?)$/i;
             const match = String(text).match(regex);
@@ -193,7 +152,7 @@
 
         async function save(txt, cat) {
             if(!txt || !txt.trim()) return;
-            const finalCat = cat || getCategoryByText(txt);
+            const finalCat = cat || "Sonstiges";
             await addDoc(colRef, { text: txt.trim(), checked: false, category: finalCat, createdAt: Date.now() });
         }
 
@@ -205,56 +164,41 @@
 
         onSnapshot(query(colRef, orderBy("checked", "asc"), orderBy("category", "asc"), orderBy("createdAt", "desc")), (snap) => {
             listContent.innerHTML = '';
-            let currentGroup = ""; 
-            let ul = null;
-
+            let currentGroup = ""; let ul = null;
             snap.docs.forEach(d => {
                 const item = d.data();
                 const cat = item.category || "Sonstiges";
                 const isChecked = !!item.checked;
                 const { amount, name } = extractAmount(item.text || "");
                 const groupHeader = isChecked ? "Erledigt ✅" : cat;
-
                 if (groupHeader !== currentGroup) {
                     currentGroup = groupHeader;
                     const h = document.createElement('div');
-                    const cClass = isChecked ? "done" : (categories[cat]?.class || "sonst");
-                    h.className = `category-header head-${cClass}`;
+                    h.className = `category-header ${isChecked ? 'head-done' : 'head-'+(categories[cat]?.class || 'sonst')}`;
                     h.innerText = groupHeader;
                     listContent.appendChild(h);
                     ul = document.createElement('ul');
                     listContent.appendChild(ul);
                 }
-
                 const li = document.createElement('li');
                 li.className = `${isChecked ? '' : 'cat-'+(categories[cat]?.class || 'sonst')} ${isChecked ? 'checked' : ''}`;
-                li.innerHTML = `
-                    <div class="item-text-wrapper">
-                        ${amount ? '<span class="amount-badge">'+amount+'</span>':''}
-                        <span class="item-name">${name}</span>
-                    </div>
-                    <button class="delete-btn">✕</button>
-                `;
+                li.innerHTML = `<div class="item-text-wrapper">${amount ? '<span class="amount-badge">'+amount+'</span>':''}<span class="item-name">${name}</span></div><button class="delete-btn">✕</button>`;
                 li.querySelector('.item-text-wrapper').onclick = () => updateDoc(doc(db, "shoppingList", d.id), { checked: !isChecked });
                 li.querySelector('.delete-btn').onclick = () => deleteDoc(doc(db, "shoppingList", d.id));
                 ul.appendChild(li);
             });
-            if (snap.empty) listContent.innerHTML = '<div class="status-msg">Liste ist leer 🛒</div>';
         });
 
         document.getElementById('toggle-import').onclick = () => {
             const a = document.getElementById('import-area');
             a.style.display = a.style.display === 'block' ? 'none' : 'block';
         };
-
         document.getElementById('import-confirm-btn').onclick = async () => {
             const area = document.getElementById('import-textarea');
             const lines = area.value.split('\n').filter(l => l.trim() !== "");
             for (const l of lines) await save(l.trim());
-            area.value = ''; 
-            document.getElementById('import-area').style.display = 'none';
+            area.value = ''; document.getElementById('import-area').style.display = 'none';
         };
-
         document.getElementById('clear-btn').onclick = async () => {
             if(!confirm("Alle abgehakten Artikel löschen?")) return;
             const s = await getDocs(query(colRef, where("checked", "==", true)));
