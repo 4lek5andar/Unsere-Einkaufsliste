@@ -85,7 +85,7 @@
             </div>
             <div class="category-select" id="cat-chips"></div>
         </div>
-        <div id="list-content"><div class="status-msg">Lade Liste...</div></div>
+        <div id="list-content"><div class="status-msg">Verbindung wird aufgebaut...</div></div>
     </div>
 
     <script type="module">
@@ -121,6 +121,7 @@
         const listContent = document.getElementById('list-content');
         const catChipsContainer = document.getElementById('cat-chips');
 
+        // Chips erstellen
         Object.keys(categories).forEach(cat => {
             const chip = document.createElement('div');
             chip.className = `cat-chip ${cat === "Sonstiges" ? "active" : ""}`;
@@ -152,3 +153,101 @@
 
         function extractAmount(text) {
             const regex = /^(\d+[\.,]?\d*\s*(x|g|kg|l|ml|pck|stk|bund|dose|flasche|stück)?\s+)|(\s+\d+[\.,]?\d*\s*(x|g|kg|l|ml|pck|stk|bund|dose|flasche|stück)?)$/i;
+            const match = String(text).match(regex);
+            if (match) {
+                const amount = match[0].trim();
+                const name = String(text).replace(match[0], "").trim();
+                return { amount, name };
+            }
+            return { amount: null, name: text };
+        }
+
+        async function save(txt, cat) {
+            if(!txt || !txt.trim()) return;
+            const finalCat = cat || getCategoryByText(txt);
+            await addDoc(colRef, { text: txt.trim(), checked: false, category: finalCat, createdAt: Date.now() });
+        }
+
+        document.getElementById('add-btn').onclick = async () => {
+            if(!input.value.trim()) return;
+            await save(input.value.trim(), selectedCategory);
+            input.value = '';
+            selectedCategory = "Sonstiges";
+            document.querySelectorAll('.cat-chip').forEach(c => {
+                c.classList.toggle('active', c.getAttribute('data-cat') === "Sonstiges");
+            });
+        };
+
+        // Snapshot Listener mit Fehler-Prüfung
+        onSnapshot(query(colRef, orderBy("checked", "asc"), orderBy("category", "asc"), orderBy("createdAt", "desc")), (snap) => {
+            listContent.innerHTML = '';
+            let curGroup = ""; 
+            let ul = null;
+
+            if (snap.empty) {
+                listContent.innerHTML = '<div class="status-msg">Liste ist leer 🛒</div>';
+                return;
+            }
+
+            snap.docs.forEach(d => {
+                const item = d.data();
+                const cat = item.category || "Sonstiges";
+                const isChecked = !!item.checked;
+                const { amount, name } = extractAmount(item.text || "");
+                
+                // Gruppen-Logik (Kategorie oder Erledigt)
+                const groupName = isChecked ? "Done" : cat;
+
+                if (groupName !== curGroup) {
+                    curGroup = groupName;
+                    const h = document.createElement('div');
+                    const displayTitle = isChecked ? "Erledigt ✅" : cat;
+                    const styleClass = isChecked ? "head-done" : ("head-" + (categories[cat]?.class || "sonst"));
+                    
+                    h.className = `category-header ${styleClass}`;
+                    h.innerText = displayTitle;
+                    listContent.appendChild(h);
+                    
+                    ul = document.createElement('ul');
+                    listContent.appendChild(ul);
+                }
+
+                const li = document.createElement('li');
+                const borderClass = isChecked ? "" : ("cat-" + (categories[cat]?.class || "sonst"));
+                li.className = `${borderClass} ${isChecked ? 'checked' : ''}`;
+                
+                li.innerHTML = `
+                    <div class="item-text-wrapper">
+                        ${amount ? '<span class="amount-badge">'+amount+'</span>':''}
+                        <span class="item-name">${name}</span>
+                    </div>
+                    <button class="delete-btn">✕</button>
+                `;
+
+                li.querySelector('.item-text-wrapper').onclick = () => updateDoc(doc(db, "shoppingList", d.id), { checked: !isChecked });
+                li.querySelector('.delete-btn').onclick = () => deleteDoc(doc(db, "shoppingList", d.id));
+                ul.appendChild(li);
+            });
+        }, (error) => {
+            console.error("Firestore Error:", error);
+            listContent.innerHTML = '<div class="status-msg" style="color:red">Fehler beim Laden!</div>';
+        });
+
+        document.getElementById('toggle-import').onclick = () => {
+            const a = document.getElementById('import-area');
+            a.style.display = a.style.display === 'block' ? 'none' : 'block';
+        };
+        document.getElementById('import-confirm-btn').onclick = async () => {
+            const area = document.getElementById('import-textarea');
+            const lines = area.value.split('\n').filter(l => l.trim() !== "");
+            for (const l of lines) await save(l.trim());
+            area.value = ''; document.getElementById('import-area').style.display = 'none';
+        };
+        document.getElementById('clear-btn').onclick = async () => {
+            if(!confirm("Alle abgehakten Artikel löschen?")) return;
+            const s = await getDocs(query(colRef, where("checked", "==", true)));
+            s.forEach(d => deleteDoc(doc(db, "shoppingList", d.id)));
+        };
+    </script>
+</body>
+</html>
