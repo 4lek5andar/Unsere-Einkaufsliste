@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Familien Liste</title>
     
+    <!-- Logo & Web-App Settings -->
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3144/3144456.png">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3144/3144456.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,12 +13,12 @@
     <style>
         :root { 
             --primary: #4CAF50; --bg: #f4f7f6; 
-            --color-obst: #4caf50; --color-kuehl: #2196f3; --color-vorrat: #ff9800;
-            --color-back: #795548; --color-getraenke: #00bcd4; --color-drogerie: #9c27b0;
-            --color-tk: #03a9f4; --color-sonst: #607d8b;
+            --c-obst: #4caf50; --c-kuehl: #2196f3; --c-vorrat: #ff9800;
+            --c-back: #795548; --c-getr: #00bcd4; --c-drog: #9c27b0;
+            --c-tk: #03a9f4; --c-sonst: #607d8b;
         }
         body { font-family: -apple-system, sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
-        #app-container { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; }
+        #app { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; }
         
         header { background: var(--primary); color: white; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         h1 { margin: 0; font-size: 1.3rem; }
@@ -27,34 +28,21 @@
         input { flex: 1; padding: 12px; border: 2px solid #f0f0f0; border-radius: 10px; font-size: 16px; outline: none; }
         button#add-btn { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 24px; cursor: pointer; }
         
-        .cat-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
-        .cat-chips::-webkit-scrollbar { display: none; }
-        .chip { padding: 6px 12px; background: #eee; border-radius: 15px; font-size: 0.7rem; white-space: nowrap; cursor: pointer; color: #666; font-weight: bold; border: 2px solid transparent; }
-        .chip.active { color: white; }
+        .cat-label { font-size: 0.7rem; color: #999; margin-bottom: 5px; display: block; font-weight: bold; }
         
-        /* Chip-Farben */
-        .chip[data-cat="Obst & Gemüse"].active { background: var(--color-obst); }
-        .chip[data-cat="Kühlregal"].active { background: var(--color-kuehl); }
-        .chip[data-cat="Vorrat"].active { background: var(--color-vorrat); }
-        .chip[data-cat="Backwaren"].active { background: var(--color-back); }
-        .chip[data-cat="Getränke"].active { background: var(--color-getraenke); }
-        .chip[data-cat="Drogerie"].active { background: var(--color-drogerie); }
-        .chip[data-cat="Tiefkühl"].active { background: var(--color-tk); }
-        .chip[data-cat="Sonstiges"].active { background: var(--color-sonst); }
-
         .cat-header { padding: 8px 15px; font-size: 0.7rem; font-weight: 800; color: white; text-transform: uppercase; margin-top: 5px; }
         ul { list-style: none; padding: 0; margin: 0; }
-        li { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f9f9f9; border-left: 5px solid transparent; }
+        li { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f9f9f9; border-left: 6px solid transparent; }
         
-        /* Listen-Ränder */
-        .li-obst { border-left-color: var(--color-obst); }
-        .li-kuehl { border-left-color: var(--color-kuehl); }
-        .li-vorrat { border-left-color: var(--color-vorrat); }
-        .li-back { border-left-color: var(--color-back); }
-        .li-getraenke { border-left-color: var(--color-getraenke); }
-        .li-drogerie { border-left-color: var(--color-drogerie); }
-        .li-tk { border-left-color: var(--color-tk); }
-        .li-sonst { border-left-color: var(--color-sonst); }
+        /* Farben für die Liste */
+        .li-obst { border-left-color: var(--c-obst); }
+        .li-kuehl { border-left-color: var(--c-kuehl); }
+        .li-vorrat { border-left-color: var(--c-vorrat); }
+        .li-back { border-left-color: var(--c-back); }
+        .li-getr { border-left-color: var(--c-getr); }
+        .li-drog { border-left-color: var(--c-drog); }
+        .li-tk { border-left-color: var(--c-tk); }
+        .li-sonst { border-left-color: var(--c-sonst); }
 
         .delete-btn { color: #ccc; background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 5px; }
         .clear-area { padding: 20px; text-align: center; }
@@ -62,24 +50,25 @@
     </style>
 </head>
 <body>
-    <div id="app-container">
+    <div id="app">
         <header><h1>🛒 FAMILIEN LISTE</h1></header>
 
         <div class="input-area">
+            <span id="detected-cat" class="cat-label">Kategorie: Sonstiges</span>
             <div class="input-row">
                 <input type="text" id="item-input" placeholder="Was fehlt uns?" autocomplete="off">
                 <button id="add-btn">+</button>
             </div>
-            <div class="cat-chips" id="cat-chips"></div>
         </div>
 
         <div id="list-content"></div>
         
         <div class="clear-area">
-            <button class="clear-btn" id="clear-btn">Abgehakt löschen 🧹</button>
+            <button class="clear-btn" id="clear-btn">Liste leeren 🧹</button>
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
@@ -98,69 +87,96 @@
         const colRef = db.collection("shoppingList");
 
         const categories = {
-            "Obst & Gemüse": { class: "obst", words: ["apfel", "banane", "gurke", "tomate", "salat", "kartoffel", "möhre", "zwiebel", "paprika", "beeren", "obst", "gemüse"] },
-            "Kühlregal": { class: "kuehl", words: ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "fleisch", "sahne"] },
-            "Vorrat": { class: "vorrat", words: ["nudeln", "mehl", "zucker", "kaffee", "tee", "öl", "reis", "chips", "schokolade", "müsli"] },
-            "Backwaren": { class: "back", words: ["brot", "brötchen", "toast", "kuchen", "baguette"] },
-            "Getränke": { class: "getraenke", words: ["wasser", "saft", "bier", "wein", "cola", "limo"] },
-            "Drogerie": { class: "drogerie", words: ["klopapier", "seife", "shampoo", "zahnpasta", "spülmittel", "deo"] },
-            "Tiefkühl": { class: "tk", words: ["pizza", "pommes", "eis", "tk"] },
-            "Sonstiges": { class: "sonst", words: [] }
+            "Obst & Gemüse": { class: "obst", color: "#4caf50", words: ["apfel", "banane", "gurke", "tomate", "salat", "kartoffel", "möhre", "zwiebel", "paprika", "beeren", "obst", "gemüse"] },
+            "Kühlregal": { class: "kuehl", color: "#2196f3", words: ["milch", "käse", "joghurt", "quark", "butter", "eier", "wurst", "schinken", "fleisch", "sahne"] },
+            "Vorrat": { class: "vorrat", color: "#ff9800", words: ["nudeln", "mehl", "zucker", "kaffee", "tee", "öl", "reis", "chips", "schokolade", "müsli", "konserve"] },
+            "Backwaren": { class: "back", color: "#795548", words: ["brot", "brötchen", "toast", "kuchen", "baguette", "semmel"] },
+            "Getränke": { class: "getr", color: "#00bcd4", words: ["wasser", "saft", "bier", "wein", "cola", "limo", "sprudel"] },
+            "Drogerie": { class: "drog", color: "#9c27b0", words: ["klopapier", "seife", "shampoo", "zahnpasta", "spülmittel", "deo", "windeln"] },
+            "Tiefkühl": { class: "tk", color: "#03a9f4", words: ["pizza", "pommes", "eis", "tk", "spinat"] },
+            "Sonstiges": { class: "sonst", color: "#607d8b", words: [] }
         };
 
-        let selectedCategory = "Sonstiges";
+        let currentCategory = "Sonstiges";
         const input = document.getElementById('item-input');
-        const chipContainer = document.getElementById('cat-chips');
+        const catLabel = document.getElementById('detected-cat');
 
-        // Chips erstellen
-        Object.keys(categories).forEach(cat => {
-            const span = document.createElement('span');
-            span.className = 'chip' + (cat === "Sonstiges" ? ' active' : '');
-            span.innerText = cat;
-            span.dataset.cat = cat;
-            span.onclick = () => {
-                selectedCategory = cat;
-                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-                span.classList.add('active');
-            };
-            chipContainer.appendChild(span);
-        });
-
-        // Automatische Erkennung
-        input.oninput = () => {
+        // Automatische Erkennung beim Tippen
+        input.addEventListener('input', () => {
             const val = input.value.toLowerCase();
+            currentCategory = "Sonstiges";
+            
             for (const [name, data] of Object.entries(categories)) {
                 if (data.words.some(w => val.includes(w))) {
-                    selectedCategory = name;
-                    document.querySelectorAll('.chip').forEach(c => {
-                        c.classList.toggle('active', c.dataset.cat === name);
-                    });
+                    currentCategory = name;
                     break;
                 }
             }
-        };
+            catLabel.innerText = "Kategorie: " + currentCategory;
+            catLabel.style.color = categories[currentCategory].color;
+        });
 
-        // Hinzufügen (EventListener Methode für Stabilität)
+        // Hinzufügen
         document.getElementById('add-btn').addEventListener('click', async () => {
             const val = input.value.trim();
             if(!val) return;
+            
             try {
                 await colRef.add({
                     text: val,
-                    category: selectedCategory,
+                    category: currentCategory,
                     createdAt: Date.now()
                 });
                 input.value = '';
+                currentCategory = "Sonstiges";
+                catLabel.innerText = "Kategorie: Sonstiges";
+                catLabel.style.color = "#999";
             } catch (e) {
-                alert("Fehler beim Speichern: " + e.message);
+                alert("Fehler: " + e.message);
             }
         });
 
-        // Liste anzeigen & Sortieren
+        // Liste laden und im Browser sortieren (verhindert Firebase-Fehler)
         colRef.onSnapshot(snap => {
-            const list = document.getElementById('list-content');
-            list.innerHTML = '';
-            const docs = [];
-            snap.forEach(d => docs.push({id: d.id, ...d.data()}));
+            const listDiv = document.getElementById('list-content');
+            listDiv.innerHTML = '';
             
-            // Sortierung im Browser (Kategorie
+            let items = [];
+            snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+
+            // Sortierung: Erst nach Kategorie-Name, dann nach Zeit
+            items.sort((a, b) => a.category.localeCompare(b.category) || b.createdAt - a.createdAt);
+
+            let lastCat = "";
+            items.forEach(item => {
+                if (item.category !== lastCat) {
+                    const h = document.createElement('div');
+                    const cData = categories[item.category] || categories["Sonstiges"];
+                    h.className = `cat-header`;
+                    h.style.background = cData.color;
+                    h.innerText = item.category;
+                    listDiv.appendChild(h);
+                    lastCat = item.category;
+                }
+
+                const li = document.createElement('li');
+                const cClass = categories[item.category]?.class || 'sonst';
+                li.className = `li-${cClass}`;
+                li.innerHTML = `
+                    <span>${item.text}</span>
+                    <button class="delete-btn" onclick="deleteItem('${item.id}')">✕</button>
+                `;
+                listDiv.appendChild(li);
+            });
+        });
+
+        window.deleteItem = (id) => colRef.doc(id).delete();
+
+        document.getElementById('clear-btn').onclick = async () => {
+            if(!confirm("Wirklich alles löschen?")) return;
+            const snap = await colRef.get();
+            snap.forEach(d => d.ref.delete());
+        };
+    </script>
+</body>
+</html>
